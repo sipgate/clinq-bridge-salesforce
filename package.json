@@ -1,0 +1,23 @@
+{
+  "name": "clinq-bridge-salesforce",
+  "version": "0.1.0",
+  "description": "CLINQ CRM-Bridge for Salesforce",
+  "main": "dist/index.js",
+  "repository": "git@github.com:fgladisch/clinq-bridge-salesforce.git",
+  "author": "Felix Gladisch <felix@felixgladisch.de>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "ts-node src/index",
+    "compile": "tsc"
+  },
+  "dependencies": {
+    "clinq-crm-bridge": "^3.1.0",
+    "jsforce": "^1.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.11.1",
+    "@types/node": "^9.4.6",
+    "ts-node": "^5.0.0",
+    "typescript": "^2.7.2"
+  }
+}
