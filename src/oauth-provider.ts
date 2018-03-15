@@ -64,6 +64,7 @@ const handleAuthCallback = oauth2 => async (req: Request, res: Response) => {
 		const conn = new Connection({ oauth2 });
 		const { code } = req.query;
 		await conn.authorize(code);
+		// console.log(conn.accessToken);
 		const contacts = await conn.sobject("Contact").select("*");
 		const parsedContacts: Contact[] = contacts
 			.filter(contactHasPhoneNumber)
