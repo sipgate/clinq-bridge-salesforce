@@ -2,10 +2,13 @@ import { OAuth2, Connection } from "jsforce";
 import * as express from "express";
 import { Request, Response } from "express";
 
-const PORT = process.env.OAUTH_PROVIDER_PORT || 8081;
-const clientId = process.env.SF_OAUTH_PROVIDER_CLIENT_ID;
-const clientSecret = process.env.SF_OAUTH_PROVIDER_CLIENT_SECRET;
-const redirectUri = process.env.SF_OAUTH_PROVIDER_REDIRECT_URI;
+const PORT = 8081;
+
+const {
+	SF_OAUTH_PROVIDER_CLIENT_ID: clientId,
+	SF_OAUTH_PROVIDER_CLIENT_SECRET: clientSecret,
+	SF_OAUTH_PROVIDER_REDIRECT_URI: redirectUri
+} = process.env;
 
 export const startOAuthProvider = () => {
 	if (!clientId || !clientSecret || !redirectUri) {
@@ -24,11 +27,11 @@ export const startOAuthProvider = () => {
 		res.redirect(oauth2.getAuthorizationUrl({ scope: "api" }));
 	});
 
-	app.get("/oauth2/callback", async (req, res) => {
+	app.get("/oauth2/callback", async (req: Request, res: Response) => {
 		try {
-			const conn = new Connection({ oauth2: oauth2 });
+			const conn = new Connection({ oauth2 });
 			const { code } = req.query;
-			const userInfo = await conn.authorize(code);
+			await conn.authorize(code);
 			console.log("Received access token", conn.accessToken);
 			res.send("success");
 		} catch (error) {
