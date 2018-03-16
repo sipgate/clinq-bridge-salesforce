@@ -1,9 +1,11 @@
 import { Contact } from "clinq-crm-bridge";
-import * as express from "express";
-import { Request, Response } from "express";
+import express = require("express");
+import { Request, RequestHandler, Response } from "express";
 import { Connection, OAuth2 } from "jsforce";
 
-const PORT = 8081;
+import { PhoneNumber, PhoneNumberType, SalesforceContact } from "./models";
+
+const PORT: number = 8081;
 
 const {
 	SF_OAUTH_PROVIDER_CLIENT_ID: clientId,
@@ -11,80 +13,76 @@ const {
 	SF_OAUTH_PROVIDER_REDIRECT_URI: redirectUri
 } = process.env;
 
-interface PhoneNumberType {
-	property: string;
-	label: string;
-}
-
-interface PhoneNumber {
-	label: string;
-	phoneNumber: string;
-}
-
 const PhoneNumberTypes: PhoneNumberType[] = [
 	{
-		property: "Phone",
-		label: "Work"
+		label: "Work",
+		property: "Phone"
 	},
 	{
-		property: "MobilePhone",
-		label: "Mobile"
+		label: "Mobile",
+		property: "MobilePhone"
 	},
 	{
-		property: "HomePhone",
-		label: "Home"
+		label: "Home",
+		property: "HomePhone"
 	}
 ];
 
-const contactHasPhoneNumber = contact =>
-	PhoneNumberTypes.some(type => contact[type.property]);
+const contactHasPhoneNumber: (
+	contact: SalesforceContact
+) => boolean = contact => PhoneNumberTypes.some(type => contact[type.property]);
 
-function convertToCrmContact(contact: any): Contact {
-	const phoneNumbers = PhoneNumberTypes.filter(
+function convertToCrmContact(contact: SalesforceContact): Contact {
+	const relevantTypes: PhoneNumberType[] = PhoneNumberTypes.filter(
 		type => contact[type.property]
-	).map(
-		type =>
-			<PhoneNumber>{
-				label: type.label,
-				phoneNumber: contact[type.property]
-			}
-	)
+	);
+	const phoneNumbers: PhoneNumber[] = relevantTypes.map(
+		type => new PhoneNumber(type.label, contact[type.property])
+	);
 	return {
 		name: contact.Name,
 		phoneNumbers
 	};
 }
 
-const redirectToAuthUrl = oauth2 => (req: Request, res: Response) => {
-	res.redirect(oauth2.getAuthorizationUrl({ scope: "api" }));
-}
+const redirectToAuthUrl: (oauth2: OAuth2) => RequestHandler = oauth2 => (
+	req: Request,
+	res: Response
+) => {
+	const redirectUrl: string = oauth2.getAuthorizationUrl({ scope: "api" });
+	res.redirect(redirectUrl);
+};
 
-const handleAuthCallback = oauth2 => async (req: Request, res: Response) => {
+const handleAuthCallback: (oauth2: OAuth2) => RequestHandler = oauth2 => async (
+	req: Request,
+	res: Response
+) => {
 	try {
-		const conn = new Connection({ oauth2 });
+		const conn: Connection = new Connection({ oauth2 });
 		const { code } = req.query;
 		await conn.authorize(code);
-		// console.log(conn.accessToken);
-		const contacts = await conn.sobject("Contact").select("*");
+		// TODO: Redirect to administration page with conn.accessToken
+		const contacts: SalesforceContact[] = await conn
+			.sobject("Contact")
+			.select("*");
 		const parsedContacts: Contact[] = contacts
 			.filter(contactHasPhoneNumber)
 			.map(convertToCrmContact);
 		res.send(parsedContacts);
 	} catch (error) {
-		console.log("Could not get access token", error.message);
 		res.send("failure");
 	}
-}
+};
 
-export const startOAuthProvider = () => {
+export const startOAuthProvider: () => void = () => {
 	if (!clientId || !clientSecret || !redirectUri) {
 		return;
 	}
 
-	const oauth2 = new OAuth2({
+	const oauth2: OAuth2 = new OAuth2({
 		clientId,
-		redirectUri,
-		clientSecret
+		clientSecret,
+		redirectUri
 	});
 
 	const app: express.Application = express();
@@ -93,7 +91,5 @@ export const startOAuthProvider = () => {
 
 	app.get("/oauth2/callback", handleAuthCallback(oauth2));
 
-	app.listen(PORT, () => {
-		console.log("OAuth provider listening on port", PORT);
-	});
+	app.listen(PORT, () => console.log("OAuth provider listening on port", PORT)); // tslint:disable-line
 };

@@ -1,4 +1,4 @@
-import { CrmAdapter, CrmConfig, Contact, start } from "clinq-crm-bridge";
+import { Contact, CrmAdapter, CrmConfig, start } from "clinq-crm-bridge";
 import { startOAuthProvider } from "./oauth-provider";
 
 class MyCrmAdapter implements CrmAdapter {
