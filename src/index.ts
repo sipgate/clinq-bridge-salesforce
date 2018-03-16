@@ -18,6 +18,9 @@ const oauth2: OAuth2 = new OAuth2({
 });
 
 class SalesforceAdapter implements CrmAdapter {
+
+	public crmIdentifier: string = "salesforce";
+
 	public async getContacts(config: CrmConfig): Promise<Contact[]> {
 		const conn: Connection = new Connection({ oauth2 });
 		const contacts: SalesforceContact[] = await conn
