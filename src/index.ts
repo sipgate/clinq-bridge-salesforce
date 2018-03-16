@@ -1,24 +1,20 @@
 import { Contact, CrmAdapter, CrmConfig, start } from "clinq-crm-bridge";
 import { Request } from "express";
-import { Connection, OAuth2 } from "jsforce";
+import { Connection, OAuth2, OAuth2Options } from "jsforce";
 
 import { PhoneNumber, PhoneNumberType, SalesforceContact } from "./models";
-import { contactHasPhoneNumber, convertSalesforceContact, PhoneNumberTypes } from "./util";
+import {
+	contactHasPhoneNumber,
+	convertSalesforceContact,
+	parseEnvironment,
+	PhoneNumberTypes
+} from "./util";
 
-const {
-	SF_OAUTH_PROVIDER_CLIENT_ID: clientId,
-	SF_OAUTH_PROVIDER_CLIENT_SECRET: clientSecret,
-	SF_OAUTH_PROVIDER_REDIRECT_URI: redirectUri
-} = process.env;
+const oauth2Options: OAuth2Options = parseEnvironment();
 
-const oauth2: OAuth2 = new OAuth2({
-	clientId,
-	clientSecret,
-	redirectUri
-});
+const oauth2: OAuth2 = new OAuth2(oauth2Options);
 
 class SalesforceAdapter implements CrmAdapter {
-
 	public crmIdentifier: string = "salesforce";
 
 	public async getContacts(config: CrmConfig): Promise<Contact[]> {
