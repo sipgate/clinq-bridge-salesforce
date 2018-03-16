@@ -15,6 +15,7 @@ declare module "jsforce" {
 	}
 
 	class Connection {
+		accessToken: string;
 		authorize: (code: string) => void;
 		sobject: (resource: string) => any;
 		constructor(params: ConnectionOptions);
