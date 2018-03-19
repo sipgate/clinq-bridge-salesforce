@@ -7,7 +7,7 @@
 	"author": "Felix Gladisch <felix@felixgladisch.de>",
 	"license": "Apache-2.0",
 	"scripts": {
-		"start": "ts-node src/index.ts",
+		"start": "yarn compile && node dist/index",
 		"watch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
 		"compile": "tsc"
 	},
