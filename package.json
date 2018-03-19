@@ -11,7 +11,7 @@
 		"compile": "tsc"
 	},
 	"dependencies": {
-		"clinq-crm-bridge": "^4.0.0",
+		"clinq-crm-bridge": "^4.1.0",
 		"jsforce": "^1.8.1"
 	},
 	"devDependencies": {

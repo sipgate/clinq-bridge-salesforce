@@ -11,11 +11,14 @@ declare module "jsforce" {
 	}
 
 	interface ConnectionOptions {
-		oauth2: OAuth2;
+		oauth2?: OAuth2;
+		instanceUrl?: string;
+		accessToken?: string;
 	}
 
 	class Connection {
 		accessToken: string;
+		instanceUrl: string;
 		authorize: (code: string) => void;
 		sobject: (resource: string) => any;
 		constructor(params: ConnectionOptions);

@@ -386,9 +386,9 @@ cli-boxes@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/cli-boxes/-/cli-boxes-1.0.0.tgz#4fa917c3e59c94a004cd61f8ee509da651687143"
 
-clinq-crm-bridge@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/clinq-crm-bridge/-/clinq-crm-bridge-4.0.1.tgz#aaef853c9cfa46bd11c270532d1bf6671706c719"
+clinq-crm-bridge@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/clinq-crm-bridge/-/clinq-crm-bridge-4.1.0.tgz#e909e1922e0da487b6d00297cfbd361de268447b"
   dependencies:
     ajv "^6.1.1"
     cors "^2.8.4"

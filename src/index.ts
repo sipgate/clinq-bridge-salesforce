@@ -15,10 +15,11 @@ const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 
 class SalesforceAdapter implements CrmAdapter {
-	public crmIdentifier: string = "salesforce";
-
 	public async getContacts(config: CrmConfig): Promise<Contact[]> {
-		const conn: Connection = new Connection({ oauth2 });
+		const conn: Connection = new Connection({
+			accessToken: config.apiKey,
+			instanceUrl: config.apiUrl
+		});
 		const contacts: SalesforceContact[] = await conn
 			.sobject("Contact")
 			.select("*");
@@ -33,11 +34,14 @@ class SalesforceAdapter implements CrmAdapter {
 		return Promise.resolve(redirectUrl);
 	}
 
-	public async handleOAuth2Callback(req: Request): Promise<string> {
+	public async handleOAuth2Callback(req: Request): Promise<CrmConfig> {
 		const conn: Connection = new Connection({ oauth2 });
 		const { code } = req.query;
 		await conn.authorize(code);
-		return conn.accessToken;
+		return {
+			apiKey: conn.accessToken,
+			apiUrl: conn.instanceUrl
+		};
 	}
 }
 
