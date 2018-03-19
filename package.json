@@ -9,7 +9,7 @@
 	"scripts": {
 		"start": "yarn compile && node dist/index",
 		"watch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
-		"compile": "tsc"
+		"compile": "./node_modules/typescript/bin/tsc"
 	},
 	"dependencies": {
 		"clinq-crm-bridge": "^4.1.0",
