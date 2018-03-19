@@ -7,21 +7,25 @@
 	"author": "Felix Gladisch <felix@felixgladisch.de>",
 	"license": "Apache-2.0",
 	"scripts": {
-		"start": "yarn compile && node dist/index",
+		"postinstall": "yarn compile",
+		"start": "node dist/index",
 		"watch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
 		"compile": "./node_modules/typescript/bin/tsc"
 	},
+	"engines": {
+		"node": "^8 || ^9",
+		"yarn": "^1.5"
+	},
 	"dependencies": {
 		"clinq-crm-bridge": "^4.1.0",
-		"jsforce": "^1.8.1"
+		"jsforce": "^1.8.1",
+		"typescript": "^2.7.2"
 	},
 	"devDependencies": {
 		"@types/express": "^4.11.1",
 		"@types/node": "^9.4.6",
 		"nodemon": "^1.17.2",
-		"ts-node": "^5.0.0",
 		"tslint": "^5.9.1",
-		"tslint-config-prettier": "^1.8.0",
-		"typescript": "^2.7.2"
+		"tslint-config-prettier": "^1.8.0"
 	}
 }
