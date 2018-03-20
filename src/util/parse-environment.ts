@@ -7,7 +7,6 @@ const {
 } = process.env;
 
 export function parseEnvironment(): OAuth2Options {
-
 	if (!clientId) {
 		throw new Error("Missing client ID in environment.");
 	}

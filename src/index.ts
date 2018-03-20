@@ -23,9 +23,7 @@ class SalesforceAdapter implements CrmAdapter {
 			oauth2,
 			refreshToken
 		});
-		const contacts: SalesforceContact[] = await connection
-			.sobject("Contact")
-			.select("*");
+		const contacts: SalesforceContact[] = await connection.sobject("Contact").select("*");
 		const parsedContacts: Contact[] = contacts
 			.filter(contactHasPhoneNumber)
 			.map(convertSalesforceContact);
