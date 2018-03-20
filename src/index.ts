@@ -16,9 +16,12 @@ const oauth2: OAuth2 = new OAuth2(oauth2Options);
 
 class SalesforceAdapter implements CrmAdapter {
 	public async getContacts(config: CrmConfig): Promise<Contact[]> {
+		const [accessToken, refreshToken] = config.apiKey.split(":");
 		const conn: Connection = new Connection({
-			accessToken: config.apiKey,
-			instanceUrl: config.apiUrl
+			accessToken,
+			instanceUrl: config.apiUrl,
+			oauth2,
+			refreshToken
 		});
 		const contacts: SalesforceContact[] = await conn
 			.sobject("Contact")

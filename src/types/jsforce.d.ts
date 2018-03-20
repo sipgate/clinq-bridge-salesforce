@@ -14,6 +14,7 @@ declare module "jsforce" {
 		oauth2?: OAuth2;
 		instanceUrl?: string;
 		accessToken?: string;
+		refreshToken?: string;
 	}
 
 	class Connection {
