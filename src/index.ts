@@ -17,13 +17,13 @@ const oauth2: OAuth2 = new OAuth2(oauth2Options);
 class SalesforceAdapter implements CrmAdapter {
 	public async getContacts(config: CrmConfig): Promise<Contact[]> {
 		const [accessToken, refreshToken] = config.apiKey.split(":");
-		const conn: Connection = new Connection({
+		const connection: Connection = new Connection({
 			accessToken,
 			instanceUrl: config.apiUrl,
 			oauth2,
 			refreshToken
 		});
-		const contacts: SalesforceContact[] = await conn
+		const contacts: SalesforceContact[] = await connection
 			.sobject("Contact")
 			.select("*");
 		const parsedContacts: Contact[] = contacts
@@ -40,12 +40,12 @@ class SalesforceAdapter implements CrmAdapter {
 	}
 
 	public async handleOAuth2Callback(req: Request): Promise<CrmConfig> {
-		const conn: Connection = new Connection({ oauth2 });
+		const connection: Connection = new Connection({ oauth2 });
 		const { code } = req.query;
-		await conn.authorize(code);
+		await connection.authorize(code);
 		return {
-			apiKey: `${conn.accessToken}:${conn.refreshToken}`,
-			apiUrl: conn.instanceUrl
+			apiKey: `${connection.accessToken}:${connection.refreshToken}`,
+			apiUrl: connection.instanceUrl
 		};
 	}
 }
