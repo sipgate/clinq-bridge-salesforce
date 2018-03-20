@@ -18,6 +18,7 @@ declare module "jsforce" {
 
 	class Connection {
 		accessToken: string;
+		refreshToken: string;
 		instanceUrl: string;
 		authorize: (code: string) => void;
 		sobject: (resource: string) => any;

@@ -30,7 +30,9 @@ class SalesforceAdapter implements CrmAdapter {
 	}
 
 	public getOAuth2RedirectUrl(): Promise<string> {
-		const redirectUrl: string = oauth2.getAuthorizationUrl({ scope: "api" });
+		const redirectUrl: string = oauth2.getAuthorizationUrl({
+			scope: "api refresh_token offline_access"
+		});
 		return Promise.resolve(redirectUrl);
 	}
 
@@ -39,7 +41,7 @@ class SalesforceAdapter implements CrmAdapter {
 		const { code } = req.query;
 		await conn.authorize(code);
 		return {
-			apiKey: conn.accessToken,
+			apiKey: `${conn.accessToken}:${conn.refreshToken}`,
 			apiUrl: conn.instanceUrl
 		};
 	}
