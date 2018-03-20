@@ -17,7 +17,7 @@
 		"yarn": "^1.5"
 	},
 	"dependencies": {
-		"clinq-crm-bridge": "^4.1.0",
+		"clinq-crm-bridge": "^4.2.0",
 		"jsforce": "^1.8.1",
 		"typescript": "^2.7.2"
 	},

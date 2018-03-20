@@ -34,7 +34,7 @@
 
 "@types/node@*", "@types/node@^9.4.6":
   version "9.4.7"
-  resolved "http://registry.npmjs.org/@types/node/-/node-9.4.7.tgz#57d81cd98719df2c9de118f2d5f3b1120dcd7275"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-9.4.7.tgz#57d81cd98719df2c9de118f2d5f3b1120dcd7275"
 
 "@types/serve-static@*":
   version "1.13.1"
@@ -71,8 +71,8 @@ ajv@^5.1.0:
     json-schema-traverse "^0.3.0"
 
 ajv@^6.1.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.2.1.tgz#28a6abc493a2abe0fb4c8507acaedb43fa550671"
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.3.0.tgz#1650a41114ef00574cac10b8032d8f4c14812da7"
   dependencies:
     fast-deep-equal "^1.0.0"
     fast-json-stable-stringify "^2.0.0"
@@ -386,9 +386,9 @@ cli-boxes@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/cli-boxes/-/cli-boxes-1.0.0.tgz#4fa917c3e59c94a004cd61f8ee509da651687143"
 
-clinq-crm-bridge@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/clinq-crm-bridge/-/clinq-crm-bridge-4.1.0.tgz#e909e1922e0da487b6d00297cfbd361de268447b"
+clinq-crm-bridge@^4.2.0:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/clinq-crm-bridge/-/clinq-crm-bridge-4.2.1.tgz#408962dcd9cc8e8b88f1dd2fbbe8431e4a859e2e"
   dependencies:
     ajv "^6.1.1"
     cors "^2.8.4"
@@ -436,8 +436,8 @@ combined-stream@1.0.6, combined-stream@^1.0.5, combined-stream@~1.0.5:
     delayed-stream "~1.0.0"
 
 commander@^2.12.1, commander@^2.9.0:
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.0.tgz#ad2a23a1c3b036e392469b8012cec6b33b4c1322"
+  version "2.15.1"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
 component-emitter@^1.2.1:
   version "1.2.1"
