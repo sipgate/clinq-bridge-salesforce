@@ -1,3 +1,3 @@
 # CLINQ CRM-Bridge for Salesforce
 
-Experimental OAuth prototype.
+This service provides Contacts from Salesforce for the CLINQ browser extension.
