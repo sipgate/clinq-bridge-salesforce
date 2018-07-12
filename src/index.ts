@@ -1,21 +1,20 @@
-import { Contact, CrmAdapter, CrmConfig, start } from "clinq-crm-bridge";
+import { Adapter, Config, Contact, start } from "@clinq/bridge";
 import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options } from "jsforce";
 
-import { PhoneNumber, PhoneNumberType, SalesforceContact } from "./models";
+import { SalesforceContact } from "./models";
 import {
 	contactHasPhoneNumber,
 	convertSalesforceContact,
 	parseEnvironment,
-	PhoneNumberTypes
 } from "./util";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 
-class SalesforceAdapter implements CrmAdapter {
-	public async getContacts(config: CrmConfig): Promise<Contact[]> {
+class SalesforceAdapter implements Adapter {
+	public async getContacts(config: Config): Promise<Contact[]> {
 		const [accessToken, refreshToken] = config.apiKey.split(":");
 		const connection: Connection = new Connection({
 			accessToken,
@@ -37,7 +36,7 @@ class SalesforceAdapter implements CrmAdapter {
 		return Promise.resolve(redirectUrl);
 	}
 
-	public async handleOAuth2Callback(req: Request): Promise<CrmConfig> {
+	public async handleOAuth2Callback(req: Request): Promise<Config> {
 		const connection: Connection = new Connection({ oauth2 });
 		const { code } = req.query;
 		await connection.authorize(code);

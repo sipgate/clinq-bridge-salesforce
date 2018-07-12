@@ -1,4 +1,4 @@
-import { Contact } from "clinq-crm-bridge";
+import { Contact } from "@clinq/bridge";
 import { PhoneNumberTypes } from ".";
 import { PhoneNumber, PhoneNumberType, SalesforceContact } from "../models";
 
@@ -8,6 +8,8 @@ export function convertSalesforceContact(contact: SalesforceContact): Contact {
 		type => new PhoneNumber(type.label, contact[type.property])
 	);
 	return {
+		id: contact.Id,
+		email: contact.Email,
 		name: contact.Name,
 		phoneNumbers
 	};
