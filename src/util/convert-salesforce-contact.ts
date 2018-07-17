@@ -7,15 +7,11 @@ export function convertSalesforceContact(contact: SalesforceContact): Contact {
 	const phoneNumbers: PhoneNumber[] = relevantTypes.map(
 		type => new PhoneNumber(type.label, contact[type.property])
 	);
-	const parsedContact: Contact = {
+	return {
+		id: contact.Id,
+		email: contact.Email,
 		name: contact.Name,
+		company: null,
 		phoneNumbers
 	};
-	if (contact.Id) {
-		parsedContact.id = contact.Id;
-	}
-	if (contact.Email) {
-		parsedContact.email = contact.Email;
-	}
-	return parsedContact;
 }
