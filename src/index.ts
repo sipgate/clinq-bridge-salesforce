@@ -3,11 +3,7 @@ import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options } from "jsforce";
 
 import { SalesforceContact } from "./models";
-import {
-	contactHasPhoneNumber,
-	convertSalesforceContact,
-	parseEnvironment,
-} from "./util";
+import { contactHasPhoneNumber, convertSalesforceContact, parseEnvironment } from "./util";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 
