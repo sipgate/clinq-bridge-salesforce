@@ -14,14 +14,10 @@
 		"watch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
 		"compile": "./node_modules/typescript/bin/tsc"
 	},
-	"engines": {
-		"node": "^9 || ^10",
-		"yarn": "^1.5"
-	},
 	"dependencies": {
 		"@types/express": "^4.16.0",
 		"@types/node": "^10.5.2",
-		"@clinq/bridge": "^3.0.0",
+		"@clinq/bridge": "^3.1.0",
 		"jsforce": "^1.8.1",
 		"typescript": "^2.7.2"
 	},
