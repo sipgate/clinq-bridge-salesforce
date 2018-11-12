@@ -9,7 +9,7 @@ const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 
 class SalesforceAdapter implements Adapter {
-	public async getContacts({apiKey, apiUrl}: Config): Promise<Contact[]> {
+	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
 		const [accessToken, refreshToken] = apiKey.split(":");
 		const connection: Connection = new Connection({
 			accessToken,
@@ -19,11 +19,15 @@ class SalesforceAdapter implements Adapter {
 		});
 		const contacts: SalesforceContact[] = await connection.sobject("Contact").select("*");
 		const anonymizedKey = `***${apiKey.substr(apiKey.length - 5, apiKey.length)}`;
-		console.log(`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`);
+		console.log(
+			`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
+		);
 		const parsedContacts: Contact[] = contacts
 			.filter(contactHasPhoneNumber)
 			.map(convertSalesforceContact(apiUrl));
-		console.log(`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`);
+		console.log(
+			`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
+		);
 		return parsedContacts;
 	}
 
