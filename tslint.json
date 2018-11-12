@@ -5,10 +5,10 @@
 			true,
 			"call-signature",
 			"parameter",
-			"variable-declaration",
 			"member-variable-declaration"
 		],
 		"object-literal-sort-keys": false,
+		"no-console": false,
 		"semicolon": true,
 		"no-implicit-dependencies": false,
 		"interface-name": false,
