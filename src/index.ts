@@ -11,6 +11,21 @@ const ANONYMIZED_KEY_CHARACTERS = 8;
 
 class SalesforceAdapter implements Adapter {
 	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
+		const fetchChunks = async (connection: Connection, contacts: SalesforceContact[]) => {
+			const newContacts: SalesforceContact[] = await connection.sobject("Contact").select("*")
+				.offset(contacts.length);
+
+			const newContactsCount = newContacts.length;
+			console.log(`Fetched chunk of ${newContactsCount} contacts...`);
+
+			if (newContactsCount > 0) {
+				return fetchChunks(connection, [...contacts, ...newContacts]);
+			} else {
+				console.log("Done fetching contacts.");
+				return contacts;
+			}
+		};
+
 		try {
 			const [accessToken, refreshToken] = apiKey.split(":");
 			const connection: Connection = new Connection({
@@ -19,7 +34,7 @@ class SalesforceAdapter implements Adapter {
 				oauth2,
 				refreshToken
 			});
-			const contacts: SalesforceContact[] = await connection.sobject("Contact").select("*");
+			const contacts: SalesforceContact[] = await fetchChunks(connection, []);
 			const anonymizedKey = `***${refreshToken.substr(
 				refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
 				refreshToken.length
