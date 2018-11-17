@@ -12,7 +12,8 @@ export const convertSalesforceContact = (apiUrl: string) => (contact: Salesforce
 		email: contact.Email ? contact.Email : null,
 		name: contact.Name,
 		company: null,
-		contactUrl: contact.attributes && contact.attributes.url ? `${apiUrl}${contact.attributes.url}` : null,
+		// contactUrl: contact.attributes && contact.attributes.url ? `${apiUrl}${contact.attributes.url}` : null,
+		contactUrl: null,
 		avatarUrl: contact.PhotoUrl ? `${apiUrl}${contact.PhotoUrl}` : null,
 		phoneNumbers
 	};
