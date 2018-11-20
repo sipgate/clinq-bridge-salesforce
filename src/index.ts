@@ -9,6 +9,8 @@ const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 const ANONYMIZED_KEY_CHARACTERS = 8;
 
+const cache = new Map<string, Contact[]>();
+
 const fetchChunks = async (
 	connection: Connection,
 	contacts: SalesforceContact[]
@@ -34,35 +36,33 @@ const fetchChunks = async (
 	}
 };
 
+const getContacts = async ({ apiKey, apiUrl }: Config) => {
+	const [accessToken, refreshToken] = apiKey.split(":");
+	const connection: Connection = new Connection({
+		accessToken,
+		instanceUrl: apiUrl,
+		oauth2,
+		refreshToken
+	});
+	const contacts: SalesforceContact[] = await fetchChunks(connection, []);
+	const anonymizedKey = `***${refreshToken.substr(
+		refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
+		refreshToken.length
+	)}`;
+	console.log(
+		`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
+	);
+	const parsedContacts: Contact[] = contacts
+		.filter(contactHasPhoneNumber)
+		.map(convertSalesforceContact(apiUrl));
+	console.log(`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`);
+	cache.set(apiKey, parsedContacts);
+};
+
 class SalesforceAdapter implements Adapter {
-	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
-		try {
-			const [accessToken, refreshToken] = apiKey.split(":");
-			const connection: Connection = new Connection({
-				accessToken,
-				instanceUrl: apiUrl,
-				oauth2,
-				refreshToken
-			});
-			const contacts: SalesforceContact[] = await fetchChunks(connection, []);
-			const anonymizedKey = `***${refreshToken.substr(
-				refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
-				refreshToken.length
-			)}`;
-			console.log(
-				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
-			);
-			const parsedContacts: Contact[] = contacts
-				.filter(contactHasPhoneNumber)
-				.map(convertSalesforceContact(apiUrl));
-			console.log(
-				`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
-			);
-			return parsedContacts;
-		} catch (error) {
-			console.log(`Could not fetch contacts: ${error.message}`);
-			unauthorized();
-		}
+	public async getContacts(config: Config): Promise<Contact[]> {
+		getContacts(config);
+		return cache.get(config.apiKey) || [];
 	}
 
 	public getOAuth2RedirectUrl(): Promise<string> {
