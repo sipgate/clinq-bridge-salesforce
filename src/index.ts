@@ -9,23 +9,33 @@ const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 const ANONYMIZED_KEY_CHARACTERS = 8;
 
+const fetchChunks = async (
+	connection: Connection,
+	contacts: SalesforceContact[]
+): Promise<SalesforceContact[]> => {
+	try {
+		const newContacts: SalesforceContact[] = await connection
+			.sobject("Contact")
+			.select("*")
+			.offset(contacts.length);
+
+		const newContactsCount = newContacts.length;
+		console.log(`Fetched chunk of ${newContactsCount} contacts...`);
+
+		if (newContactsCount > 0) {
+			return fetchChunks(connection, [...contacts, ...newContacts]);
+		} else {
+			console.log("Done fetching contacts.");
+			return contacts;
+		}
+	} catch (error) {
+		console.log(`Could not fetch contacts: ${error.message}`);
+		return contacts;
+	}
+};
+
 class SalesforceAdapter implements Adapter {
 	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
-		const fetchChunks = async (connection: Connection, contacts: SalesforceContact[]) => {
-			const newContacts: SalesforceContact[] = await connection.sobject("Contact").select("*")
-				.offset(contacts.length);
-
-			const newContactsCount = newContacts.length;
-			console.log(`Fetched chunk of ${newContactsCount} contacts...`);
-
-			if (newContactsCount > 0) {
-				return fetchChunks(connection, [...contacts, ...newContacts]);
-			} else {
-				console.log("Done fetching contacts.");
-				return contacts;
-			}
-		};
-
 		try {
 			const [accessToken, refreshToken] = apiKey.split(":");
 			const connection: Connection = new Connection({
@@ -49,7 +59,8 @@ class SalesforceAdapter implements Adapter {
 				`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
 			);
 			return parsedContacts;
-		} catch {
+		} catch (error) {
+			console.log(`Could not fetch contacts: ${error.message}`);
 			unauthorized();
 		}
 	}
