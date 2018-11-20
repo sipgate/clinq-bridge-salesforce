@@ -1,8 +1,6 @@
 import { Adapter, Config, Contact, start, unauthorized } from "@clinq/bridge";
 import { Request } from "express";
-import { Connection, OAuth2, OAuth2Options } from "jsforce";
-
-import { SalesforceContact } from "./models";
+import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
 import { contactHasPhoneNumber, convertSalesforceContact, parseEnvironment } from "./util";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
@@ -11,24 +9,38 @@ const ANONYMIZED_KEY_CHARACTERS = 8;
 
 const cache = new Map<string, Contact[]>();
 
-const fetchChunks = async (
+const querySalesforceContacts = async (
 	connection: Connection,
 	contacts: SalesforceContact[]
 ): Promise<SalesforceContact[]> => {
 	try {
-		const newContacts: SalesforceContact[] = await connection
-			.sobject("Contact")
-			.select("*")
-			.offset(contacts.length);
+		const result = await connection.query(`
+			SELECT
+				Contact.Id,
+				Contact.Email,
+				Contact.Name,
+				Contact.Phone,
+				Contact.MobilePhone,
+				Contact.HomePhone
+			FROM Contact
+			WHERE Contact.Phone != null
+				OR Contact.MobilePhone != null
+				OR Contact.HomePhone != null
+			OFFSET ${contacts.length}
+		`);
+
+		const newContacts: SalesforceContact[] = result.records;
 
 		const newContactsCount = newContacts.length;
 		console.log(`Fetched chunk of ${newContactsCount} contacts...`);
 
-		if (newContactsCount > 0) {
-			return fetchChunks(connection, [...contacts, ...newContacts]);
+		const mergedContacts = [...contacts, ...newContacts];
+
+		if (!result.done) {
+			return querySalesforceContacts(connection, mergedContacts);
 		} else {
 			console.log("Done fetching contacts.");
-			return contacts;
+			return mergedContacts;
 		}
 	} catch (error) {
 		console.log(`Could not fetch contacts: ${error.message}`);
@@ -44,7 +56,7 @@ const getContacts = async ({ apiKey, apiUrl }: Config) => {
 		oauth2,
 		refreshToken
 	});
-	const contacts: SalesforceContact[] = await fetchChunks(connection, []);
+	const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
 	const anonymizedKey = `***${refreshToken.substr(
 		refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
 		refreshToken.length
@@ -54,7 +66,7 @@ const getContacts = async ({ apiKey, apiUrl }: Config) => {
 	);
 	const parsedContacts: Contact[] = contacts
 		.filter(contactHasPhoneNumber)
-		.map(convertSalesforceContact(apiUrl));
+		.map(convertSalesforceContact);
 	console.log(`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`);
 	cache.set(apiKey, parsedContacts);
 };

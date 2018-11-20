@@ -1,8 +1,9 @@
 import { Contact } from "@clinq/bridge";
+import { SalesforceContact } from "jsforce";
 import { PhoneNumberTypes } from ".";
-import { PhoneNumber, PhoneNumberType, SalesforceContact } from "../models";
+import { PhoneNumber, PhoneNumberType } from "../models";
 
-export const convertSalesforceContact = (apiUrl: string) => (contact: SalesforceContact): Contact => {
+export const convertSalesforceContact = (contact: SalesforceContact): Contact => {
 	const relevantTypes: PhoneNumberType[] = PhoneNumberTypes.filter(type => contact[type.property]);
 	const phoneNumbers: PhoneNumber[] = relevantTypes.map(
 		type => new PhoneNumber(type.label, contact[type.property])
@@ -14,7 +15,7 @@ export const convertSalesforceContact = (apiUrl: string) => (contact: Salesforce
 		company: null,
 		// contactUrl: contact.attributes && contact.attributes.url ? `${apiUrl}${contact.attributes.url}` : null,
 		contactUrl: null,
-		avatarUrl: contact.PhotoUrl ? `${apiUrl}${contact.PhotoUrl}` : null,
+		avatarUrl: null,
 		phoneNumbers
 	};
 };
