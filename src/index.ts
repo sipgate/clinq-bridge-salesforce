@@ -36,7 +36,7 @@ const querySalesforceContacts = async (
 
 		const mergedContacts = [...contacts, ...newContacts];
 
-		if (!result.done) {
+		if (newContactsCount > 0) {
 			return querySalesforceContacts(connection, mergedContacts);
 		} else {
 			console.log("Done fetching contacts.");
