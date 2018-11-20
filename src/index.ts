@@ -15,7 +15,8 @@ const querySalesforceContacts = async (
 ): Promise<SalesforceContact[]> => {
 	try {
 		const lastContact = contacts[contacts.length - 1];
-		const additionalCondition = contacts.length > 0 ? "AND Contact.CreatedDate > " + lastContact.CreatedDate : "";
+		const additionalCondition =
+			contacts.length > 0 ? "AND Contact.CreatedDate > " + lastContact.CreatedDate : "";
 
 		const result = await connection.query(`
 			SELECT
@@ -57,26 +58,32 @@ const querySalesforceContacts = async (
 };
 
 const getContacts = async ({ apiKey, apiUrl }: Config) => {
-	const [accessToken, refreshToken] = apiKey.split(":");
-	const connection: Connection = new Connection({
-		accessToken,
-		instanceUrl: apiUrl,
-		oauth2,
-		refreshToken
-	});
-	const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
-	const anonymizedKey = `***${refreshToken.substr(
-		refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
-		refreshToken.length
-	)}`;
-	console.log(
-		`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
-	);
-	const parsedContacts: Contact[] = contacts
-		.filter(contactHasPhoneNumber)
-		.map(convertSalesforceContact);
-	console.log(`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`);
-	cache.set(apiKey, parsedContacts);
+	try {
+		const [accessToken, refreshToken] = apiKey.split(":");
+		const connection: Connection = new Connection({
+			accessToken,
+			instanceUrl: apiUrl,
+			oauth2,
+			refreshToken
+		});
+		const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
+		const anonymizedKey = `***${refreshToken.substr(
+			refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
+			refreshToken.length
+		)}`;
+		console.log(
+			`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
+		);
+		const parsedContacts: Contact[] = contacts
+			.filter(contactHasPhoneNumber)
+			.map(convertSalesforceContact);
+		console.log(
+			`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
+		);
+		cache.set(apiKey, parsedContacts);
+	} catch (error) {
+		console.log(`Could not fetch contacts: ${error.message}`);
+	}
 };
 
 class SalesforceAdapter implements Adapter {
