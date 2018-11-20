@@ -14,6 +14,9 @@ const querySalesforceContacts = async (
 	contacts: SalesforceContact[]
 ): Promise<SalesforceContact[]> => {
 	try {
+		const lastContact = contacts[contacts.length - 1];
+		const additionalCondition = contacts.length > 0 ? "AND Contact.CreatedDate > " + lastContact.CreatedDate : "";
+
 		const result = await connection.query(`
 			SELECT
 				Contact.Id,
@@ -21,12 +24,17 @@ const querySalesforceContacts = async (
 				Contact.Name,
 				Contact.Phone,
 				Contact.MobilePhone,
-				Contact.HomePhone
+				Contact.HomePhone,
+				Contact.CreatedDate
 			FROM Contact
-			WHERE Contact.Phone != null
-				OR Contact.MobilePhone != null
-				OR Contact.HomePhone != null
-			OFFSET ${contacts.length}
+			WHERE (
+				Contact.Phone != null
+					OR Contact.MobilePhone != null
+					OR Contact.HomePhone != null
+			)
+			${additionalCondition}
+			ORDER BY Contact.CreatedDate
+			LIMIT 2000
 		`);
 
 		const newContacts: SalesforceContact[] = result.records;

@@ -12,6 +12,7 @@ declare module "jsforce" {
 		MobilePhone: string | null;
 		HomePhone: string | null;
 		PhotoUrl: string | null;
+		CreatedDate: string;
 		attributes: SalesforceAttributes | null;
 	}
 
