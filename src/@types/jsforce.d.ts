@@ -7,6 +7,7 @@ declare module "jsforce" {
 	interface SalesforceContact {
 		Id?: string;
 		Email: string | null;
+		Name?: string;
 		FirstName: string;
 		LastName: string;
 		Phone?: string | null;

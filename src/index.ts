@@ -42,6 +42,8 @@ async function querySalesforceContacts(
 				Contact.Id,
 				Contact.Email,
 				Contact.Name,
+				Contact.FirstName,
+				Contact.LastName,
 				Contact.Phone,
 				Contact.MobilePhone,
 				Contact.HomePhone,
