@@ -1,16 +1,17 @@
+import { PhoneNumberLabel } from "@clinq/bridge";
 import { PhoneNumberType } from "../models";
 
 export const PhoneNumberTypes: PhoneNumberType[] = [
 	{
-		label: "Work",
+		label: PhoneNumberLabel.WORK,
 		property: "Phone"
 	},
 	{
-		label: "Mobile",
+		label: PhoneNumberLabel.MOBILE,
 		property: "MobilePhone"
 	},
 	{
-		label: "Home",
+		label: PhoneNumberLabel.HOME,
 		property: "HomePhone"
 	}
 ];

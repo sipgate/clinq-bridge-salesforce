@@ -111,7 +111,7 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 		firstName: contact.firstName ? contact.firstName : null,
 		lastName: contact.lastName ? contact.lastName : null,
 		email: contact.email ? contact.email : null,
-		company: null,
+		organization: null,
 		contactUrl: null,
 		avatarUrl: null,
 		phoneNumbers: Array.isArray(contact.phoneNumbers) ? contact.phoneNumbers : []

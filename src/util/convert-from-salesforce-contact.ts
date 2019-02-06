@@ -15,7 +15,7 @@ export function convertFromSalesforceContact(contact: SalesforceContact): Contac
 		name: null,
 		firstName: contact.FirstName ? contact.FirstName : null,
 		lastName: contact.LastName ? contact.LastName : null,
-		company: null,
+		organization: null,
 		contactUrl: null,
 		avatarUrl: null,
 		phoneNumbers

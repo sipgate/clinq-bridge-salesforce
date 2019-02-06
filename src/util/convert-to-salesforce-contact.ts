@@ -1,10 +1,16 @@
-import { ContactTemplate, ContactUpdate } from "@clinq/bridge";
+import { ContactTemplate, ContactUpdate, PhoneNumberLabel } from "@clinq/bridge";
 import { SalesforceContact } from "jsforce";
 
-export function convertToSalesforceContact(contact: ContactTemplate | ContactUpdate): SalesforceContact {
-	const mobilePhoneNumber = contact.phoneNumbers.find(entry => entry.label === "Mobile");
-	const homePhoneNumber = contact.phoneNumbers.find(entry => entry.label === "Home");
-	const defaultPhoneNumber = contact.phoneNumbers.find(entry => entry.label === "Default");
+export function convertToSalesforceContact(
+	contact: ContactTemplate | ContactUpdate
+): SalesforceContact {
+	const mobilePhoneNumber = contact.phoneNumbers.find(
+		entry => entry.label === PhoneNumberLabel.MOBILE
+	);
+	const homePhoneNumber = contact.phoneNumbers.find(entry => entry.label === PhoneNumberLabel.HOME);
+	const defaultPhoneNumber = contact.phoneNumbers.find(
+		entry => entry.label === PhoneNumberLabel.WORK
+	);
 
 	return {
 		FirstName: contact.firstName,

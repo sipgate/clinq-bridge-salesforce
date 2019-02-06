@@ -9,9 +9,9 @@ declare module "jsforce" {
 		Email: string | null;
 		FirstName: string;
 		LastName: string;
-		Phone: string | null;
-		MobilePhone: string | null;
-		HomePhone: string | null;
+		Phone?: string | null;
+		MobilePhone?: string | null;
+		HomePhone?: string | null;
 		CreatedDate?: string;
 		attributes?: SalesforceAttributes | null;
 	}
@@ -46,7 +46,7 @@ declare module "jsforce" {
 		instanceUrl: string;
 		authorize: (code: string) => void;
 		sobject: (resource: string) => SObject;
-		query: (query: string) => QueryResult
+		query: (query: string) => QueryResult;
 		constructor(params: ConnectionOptions);
 	}
 
