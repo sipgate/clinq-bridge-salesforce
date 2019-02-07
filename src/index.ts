@@ -9,16 +9,22 @@ import {
 } from "@clinq/bridge";
 import { Request } from "express";
 import { Connection, CRUDError, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
+import { RedisCache } from "./cache";
 import { contactHasPhoneNumber, convertFromSalesforceContact, parseEnvironment } from "./util";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
+
+const { REDIS_URL } = process.env;
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 const ANONYMIZED_KEY_CHARACTERS = 8;
 
-const cache = new Map<string, Contact[]>();
+// const cache = new Map<string, Contact[]>();
+const redisCache: RedisCache = new RedisCache(REDIS_URL);
 
 function createSalesforceConnection({ apiKey, apiUrl }: Config): Connection {
+
+
 	const [accessToken, refreshToken] = apiKey.split(":");
 	return new Connection({
 		accessToken,
@@ -86,7 +92,7 @@ function anonymizeKey(apiKey: string): string {
 	)}`;
 }
 
-async function getContacts({ apiKey, apiUrl }: Config): Promise<void> {
+async function getContacts( apiKey: string, apiUrl: string): Promise<void> {
 	try {
 		const connection = createSalesforceConnection({ apiKey, apiUrl });
 		const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
@@ -100,9 +106,17 @@ async function getContacts({ apiKey, apiUrl }: Config): Promise<void> {
 		console.log(
 			`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
 		);
-		cache.set(apiKey, parsedContacts);
 	} catch (error) {
 		console.log(`Could not fetch contacts: ${error.message}`);
+	}
+}
+
+async function populateCache({ apiKey, apiUrl }: Config): Promise<void> {
+	try {
+		const contacts = await getContacts(apiKey, apiUrl);
+		await redisCache.set(apiKey, contacts);
+	} catch (error) {
+		console.error(error.message);
 	}
 }
 
@@ -122,8 +136,8 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 
 class SalesforceAdapter implements Adapter {
 	public async getContacts(config: Config): Promise<Contact[]> {
-		getContacts(config);
-		return cache.get(config.apiKey) || [];
+		populateCache(config);
+		return redisCache.get(config.apiKey) || [];
 	}
 
 	public async createContact(config: Config, contact: ContactTemplate): Promise<Contact> {
