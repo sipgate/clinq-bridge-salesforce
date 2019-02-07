@@ -44,7 +44,19 @@ async function querySalesforceContacts(
 			.limit(2000)
 			.orderby("CreatedDate", "ASC")
 			.execute((error, records) => {
-				return records;
+				return records.map(record => {
+					return {
+						Id: record.Id,
+						Email: record.Email,
+						Name: record.Name,
+						FirstName: record.FirstName,
+						LastName: record.LastName,
+						Phone: record.Phone,
+						MobilePhone: record.MobilePhone,
+						HomePhone: record.HomePhone,
+						CreatedDate: record.CreatedDate
+					};
+				});
 			});
 
 		const newContacts: SalesforceContact[] = result;
