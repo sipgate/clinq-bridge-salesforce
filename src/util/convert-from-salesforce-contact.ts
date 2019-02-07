@@ -9,7 +9,6 @@ export function convertFromSalesforceContact(contact: SalesforceContact): Contac
 		label: type.label,
 		phoneNumber: contact[type.property]
 	}));
-
 	return {
 		id: contact.Id,
 		email: contact.Email ? contact.Email : null,

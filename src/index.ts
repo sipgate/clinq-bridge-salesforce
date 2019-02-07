@@ -35,31 +35,19 @@ async function querySalesforceContacts(
 	try {
 		const lastContact = contacts[contacts.length - 1];
 		const additionalCondition =
-			contacts.length > 0 ? "AND Contact.CreatedDate > " + lastContact.CreatedDate : "";
+			contacts.length > 0 ? "CreatedDate > " + lastContact.CreatedDate : "";
 
-		const result = await connection.query(`
-			SELECT
-				Contact.Id,
-				Contact.Email,
-				Contact.Name,
-				Contact.FirstName,
-				Contact.LastName,
-				Contact.Phone,
-				Contact.MobilePhone,
-				Contact.HomePhone,
-				Contact.CreatedDate
-			FROM Contact
-			WHERE (
-				Contact.Phone != null
-					OR Contact.MobilePhone != null
-					OR Contact.HomePhone != null
-			)
-			${additionalCondition}
-			ORDER BY Contact.CreatedDate
-			LIMIT 2000
-		`);
+		const result = await connection
+			.sobject("Contact")
+			.select("*")
+			.where(additionalCondition)
+			.limit(2000)
+			.orderby("CreatedDate", "ASC")
+			.execute((error, records) => {
+				return records;
+			});
 
-		const newContacts: SalesforceContact[] = result.records;
+		const newContacts: SalesforceContact[] = result;
 
 		const newContactsCount = newContacts.length;
 		console.log(`Fetched chunk of ${newContactsCount} contacts...`);
