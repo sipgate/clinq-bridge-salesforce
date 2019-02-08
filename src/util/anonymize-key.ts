@@ -1,5 +1,9 @@
-const ANONYMIZED_KEY_LENGTH = 10;
+const ANONYMIZED_KEY_LENGTH = 8;
 
-export function anonymizeKey(key: string): string {
-	return `...${key.substr(key.length - ANONYMIZED_KEY_LENGTH, ANONYMIZED_KEY_LENGTH)}`;
+export function anonymizeKey(apiKey: string): string {
+	const [, refreshToken] = apiKey.split(":");
+	return `***${refreshToken.substr(
+		refreshToken.length - ANONYMIZED_KEY_LENGTH,
+		refreshToken.length
+	)}`;
 }

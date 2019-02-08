@@ -11,13 +11,13 @@ import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
 import { RedisCache } from "./cache";
 import { contactHasPhoneNumber, convertFromSalesforceContact, parseEnvironment } from "./util";
+import { anonymizeKey } from "./util/anonymize-key";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
 
 const { REDIS_URL } = process.env;
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
-const ANONYMIZED_KEY_CHARACTERS = 8;
 const redisCache: RedisCache = new RedisCache(REDIS_URL);
 
 function createSalesforceConnection({ apiKey, apiUrl }: Config): Connection {
@@ -78,14 +78,6 @@ async function querySalesforceContacts(
 		console.log(`Could not fetch contacts: ${error.message}`);
 		return contacts;
 	}
-}
-
-function anonymizeKey(apiKey: string): string {
-	const [, refreshToken] = apiKey.split(":");
-	return `***${refreshToken.substr(
-		refreshToken.length - ANONYMIZED_KEY_CHARACTERS,
-		refreshToken.length
-	)}`;
 }
 
 async function getContacts(apiKey: string, apiUrl: string): Promise<Contact[]> {
