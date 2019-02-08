@@ -34,7 +34,7 @@ export class RedisCache {
 		await this.client.del(key);
 	}
 
-	public async set(key: string, value: any): Promise<void> {
+	public async set(key: string, value: Contact[]): Promise<void> {
 		const stringified = JSON.stringify(value);
 		console.log(`Saving contacts for key "${anonymizeKey(key)}" to cache.`);
 		await this.client.set(key, stringified, "EX", CACHE_TTL);
