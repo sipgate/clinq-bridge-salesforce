@@ -19,6 +19,8 @@ const { REDIS_URL } = process.env;
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
 const redisCache: RedisCache = new RedisCache(REDIS_URL);
+const queryTimes = new Map<string, number>();
+const QUERY_TIME_LIMIT = 60 * 60 * 1000;
 
 function createSalesforceConnection({ apiKey, apiUrl }: Config): Connection {
 	const [accessToken, refreshToken] = apiKey.split(":");
@@ -103,6 +105,7 @@ async function getContacts(apiKey: string, apiUrl: string): Promise<Contact[]> {
 async function populateCache({ apiKey, apiUrl }: Config): Promise<void> {
 	try {
 		const contacts: Contact[] = await getContacts(apiKey, apiUrl);
+		queryTimes.set(apiKey, new Date().getTime());
 		await redisCache.set(apiKey, contacts);
 	} catch (error) {
 		console.error(`Could not get contacts for key "${anonymizeKey(apiKey)}"`, error.message);
@@ -126,8 +129,14 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 
 class SalesforceAdapter implements Adapter {
 	public async getContacts(config: Config): Promise<Contact[]> {
+		const cached = redisCache.get(config.apiKey);
+		const lastQueryTime = queryTimes.get(config.apiKey);
+		const now = new Date().getTime();
+		if (cached && lastQueryTime && now - lastQueryTime < QUERY_TIME_LIMIT) {
+			return cached;
+		}
 		populateCache(config);
-		return redisCache.get(config.apiKey) || [];
+		return cached || [];
 	}
 
 	public async createContact(config: Config, contact: ContactTemplate): Promise<Contact> {
