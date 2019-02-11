@@ -109,8 +109,10 @@ async function getContacts(apiKey: string, apiUrl: string): Promise<Contact[]> {
 async function populateCache({ apiKey, apiUrl }: Config): Promise<void> {
 	try {
 		const contacts: Contact[] = await getContacts(apiKey, apiUrl);
-		queryTimes.set(apiKey, new Date().getTime());
-		await redisCache.set(apiKey, contacts);
+		if (contacts.length > 0) {
+			queryTimes.set(apiKey, new Date().getTime());
+			await redisCache.set(apiKey, contacts);
+		}
 	} catch (error) {
 		console.error(`Could not get contacts for key "${anonymizeKey(apiKey)}"`, error.message);
 		throw new ServerError(401, "Unauthorized");
