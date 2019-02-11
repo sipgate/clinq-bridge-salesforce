@@ -49,6 +49,7 @@ async function querySalesforceContacts(
 			.orderby("CreatedDate", "ASC")
 			.execute((error, records) => {
 				if (error || !records) {
+					console.error("Got an error while fetching chunk:", error.message);
 					return [];
 				}
 				return records.map(record => {
