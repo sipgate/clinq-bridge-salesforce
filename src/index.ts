@@ -48,6 +48,9 @@ async function querySalesforceContacts(
 			.limit(2000)
 			.orderby("CreatedDate", "ASC")
 			.execute((error, records) => {
+				if (error || !records) {
+					return [];
+				}
 				return records.map(record => {
 					return {
 						Id: record.Id,
