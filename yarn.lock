@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@clinq/bridge@^7.0.2":
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/@clinq/bridge/-/bridge-7.0.2.tgz#a0b322fb9febb91167db76fd8f7b90dbf42bd508"
-  integrity sha512-GBWloju3u8zgLB1otnjKw+GhhOvBbxmMTQJtHG+jSlhGrdbxK7sDErgTI2QF3nCvyS3mRUiAiDbEXwuTnXcDYg==
+"@clinq/bridge@^7.4.0":
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/@clinq/bridge/-/bridge-7.4.0.tgz#07efac1afe02afdb93a2c47e9ce53b368d23a164"
+  integrity sha512-RWb6OaGWq+yZ5wKou+vscltgTNI6k8o1tgrXroA+AjskdYIpkDPiPOiaJWXZWhfkdmQIbNZokc6TCIsz5/fkDw==
   dependencies:
     ajv "^6.1.1"
     axios "^0.18.0"
@@ -13,6 +13,10 @@
     cookie-parser "^1.4.3"
     cors "^2.8.4"
     express "^4.16.2"
+    get-port "^4.1.0"
+    google-libphonenumber "^3.2.2"
+    lru-cache "^5.1.1"
+    redis "^2.8.0"
 
 "@types/body-parser@*":
   version "1.17.0"
@@ -60,13 +64,6 @@
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.3.tgz#7ee330ba7caafb98090bece86a5ee44115904c2c"
   integrity sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
-
-"@types/redis@^2.8.10":
-  version "2.8.10"
-  resolved "https://registry.yarnpkg.com/@types/redis/-/redis-2.8.10.tgz#27130c3bcc803265a51cb978538ca330dff2e748"
-  integrity sha512-X0NeV3ivoif2SPsmuPhwTkKfcr1fDJlaJIOyxZ9/TCIEbvzMzmZlstqCZ5r7AOolbOJtAfvuGArNXMexYYH3ng==
-  dependencies:
-    "@types/node" "*"
 
 "@types/serve-static@*":
   version "1.13.2"
@@ -994,6 +991,11 @@ gauge@~2.7.3:
     strip-ansi "^3.0.1"
     wide-align "^1.1.0"
 
+get-port@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/get-port/-/get-port-4.1.0.tgz#93eb3d5552c197497d76e9c389a6ac9920e20192"
+  integrity sha512-4/fqAYrzrzOiqDrdeZRKXGdTGgbkfTEumGlNQPeP6Jy8w0PzN9mzeNQ3XgHaTNie8pQ3hOUkrwlZt2Fzk5H9mA==
+
 get-stream@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-3.0.0.tgz#8e943d1358dc37555054ecbe2edb05aa174ede14"
@@ -1037,6 +1039,11 @@ global-dirs@^0.1.0:
   integrity sha1-sxnA3UYH81PzvpzKTHL8FIxJ9EU=
   dependencies:
     ini "^1.3.4"
+
+google-libphonenumber@^3.2.2:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.2.tgz#3d9d7ba727e99a50812f21b0ed313723b76c5c54"
+  integrity sha512-ubjGeosYPeusjYbUHy76lCniGTTI0k1rIFc+uKBX+jHQLDmWOSUtlFUxaeoLJ+Y+PAMM6dWp+C1HjHx5BI8kEw==
 
 got@^6.7.1:
   version "6.7.1"
@@ -1540,6 +1547,13 @@ lru-cache@^4.0.1:
   dependencies:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
+
+lru-cache@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-5.1.1.tgz#1da27e6710271947695daf6848e847f01d84b920"
+  integrity sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==
+  dependencies:
+    yallist "^3.0.2"
 
 make-dir@^1.0.0:
   version "1.3.0"

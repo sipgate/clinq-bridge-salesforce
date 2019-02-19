@@ -9,18 +9,12 @@ import {
 } from "@clinq/bridge";
 import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
-import { RedisCache } from "./cache";
 import { contactHasPhoneNumber, convertFromSalesforceContact, parseEnvironment } from "./util";
 import { anonymizeKey } from "./util/anonymize-key";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
 
-const { REDIS_URL } = process.env;
-
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
-const redisCache: RedisCache = new RedisCache(REDIS_URL);
-const queryTimes = new Map<string, number>();
-const QUERY_TIME_LIMIT = 60 * 60 * 1000;
 
 function createSalesforceConnection({ apiKey, apiUrl }: Config): Connection {
 	const [accessToken, refreshToken] = apiKey.split(":");
@@ -86,39 +80,6 @@ async function querySalesforceContacts(
 	}
 }
 
-async function getContacts(apiKey: string, apiUrl: string): Promise<Contact[]> {
-	try {
-		const connection = createSalesforceConnection({ apiKey, apiUrl });
-		const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
-		const anonymizedKey = anonymizeKey(apiKey);
-		console.log(
-			`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
-		);
-		const parsedContacts: Contact[] = contacts
-			.filter(contactHasPhoneNumber)
-			.map(convertFromSalesforceContact);
-		console.log(
-			`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
-		);
-		return parsedContacts;
-	} catch (error) {
-		console.log(`Could not fetch contacts: ${error.message}`);
-	}
-}
-
-async function populateCache({ apiKey, apiUrl }: Config): Promise<void> {
-	try {
-		const contacts: Contact[] = await getContacts(apiKey, apiUrl);
-		if (contacts.length > 0) {
-			queryTimes.set(apiKey, new Date().getTime());
-			await redisCache.set(apiKey, contacts);
-		}
-	} catch (error) {
-		console.error(`Could not get contacts for key "${anonymizeKey(apiKey)}"`, error.message);
-		throw new ServerError(401, "Unauthorized");
-	}
-}
-
 function createContactResponse(id: string, contact: ContactTemplate | ContactUpdate): Contact {
 	return {
 		id,
@@ -134,15 +95,25 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 }
 
 class SalesforceAdapter implements Adapter {
-	public async getContacts(config: Config): Promise<Contact[]> {
-		const cached = redisCache.get(config.apiKey);
-		const lastQueryTime = queryTimes.get(config.apiKey);
-		const now = new Date().getTime();
-		if (cached && lastQueryTime && now - lastQueryTime < QUERY_TIME_LIMIT) {
-			return cached;
+	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
+		try {
+			const connection = createSalesforceConnection({ apiKey, apiUrl });
+			const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
+			const anonymizedKey = anonymizeKey(apiKey);
+			console.log(
+				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
+			);
+			const parsedContacts: Contact[] = contacts
+				.filter(contactHasPhoneNumber)
+				.map(convertFromSalesforceContact);
+			console.log(
+				`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
+			);
+			return parsedContacts;
+		} catch (error) {
+			console.log(`Could not fetch contacts: ${error.message}`);
+			return [];
 		}
-		populateCache(config);
-		return cached || [];
 	}
 
 	public async createContact(config: Config, contact: ContactTemplate): Promise<Contact> {
@@ -151,14 +122,7 @@ class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			const response = await connection.sobject("Contact").create(salesforceContact);
-			const createdContact = createContactResponse(response.id, contact);
-			const cached = await redisCache.get(config.apiKey);
-
-			if (cached) {
-				const updatedCache = [...cached, createdContact];
-				await redisCache.set(config.apiKey, updatedCache);
-			}
-			return createdContact;
+			return createContactResponse(response.id, contact);
 		} catch (error) {
 			console.log(`Could not create contact for ${anonymizedKey}`, error.message);
 			if (error.name === "DUPLICATES_DETECTED") {
@@ -173,14 +137,7 @@ class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			const response = await connection.sobject("Contact").update({ Id: id, ...salesforceContact });
-			const updatedContact = createContactResponse(response.id, contact);
-			const cached = await redisCache.get(config.apiKey);
-
-			if (cached) {
-				const updatedCache = cached.map(entry => (entry.id === id ? updatedContact : entry));
-				await redisCache.set(config.apiKey, updatedCache);
-			}
-			return updatedContact;
+			return createContactResponse(response.id, contact);
 		} catch (error) {
 			console.log(`Could not update contact for ${anonymizedKey}`, error.message);
 			if (error.name === "ENTITY_IS_DELETED" || error.name === "INVALID_CROSS_REFERENCE_KEY") {
@@ -194,12 +151,6 @@ class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			await connection.sobject("Contact").destroy(id);
-			const cached = await redisCache.get(config.apiKey);
-
-			if (cached) {
-				const updatedCache = cached.filter(entry => entry.id !== id);
-				await redisCache.set(config.apiKey, updatedCache);
-			}
 		} catch (error) {
 			console.log(`Could not delete contact for ${anonymizedKey}`, error.message);
 			if (error.name === "ENTITY_IS_DELETED" || error.name === "INVALID_CROSS_REFERENCE_KEY") {
