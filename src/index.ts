@@ -9,12 +9,24 @@ import {
 } from "@clinq/bridge";
 import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
+import { promisify } from "util";
 import { contactHasPhoneNumber, convertFromSalesforceContact, parseEnvironment } from "./util";
 import { anonymizeKey } from "./util/anonymize-key";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
+const RELEVANT_CONTACT_FIELDS = [
+	"Id",
+	"Email",
+	"Name",
+	"FirstName",
+	"LastName",
+	"Phone",
+	"MobilePhone",
+	"HomePhone",
+	"CreatedDate"
+];
 
 function createSalesforceConnection({ apiKey, apiUrl }: Config): Connection {
 	const [accessToken, refreshToken] = apiKey.split(":");
@@ -35,9 +47,15 @@ async function querySalesforceContacts(
 		const additionalCondition =
 			contacts.length > 0 ? "CreatedDate > " + lastContact.CreatedDate : "";
 
-		const result = await connection
-			.sobject("Contact")
-			.select("*")
+		const sobjectContact = connection.sobject("Contact");
+
+		const describeResult = await promisify(sobjectContact.describe)();
+		const fields = describeResult.fields
+			.map(entry => entry.name)
+			.filter(field => RELEVANT_CONTACT_FIELDS.includes(field));
+
+		const result = await sobjectContact
+			.select(fields.join(", "))
 			.where(additionalCondition)
 			.limit(2000)
 			.orderby("CreatedDate", "ASC")
@@ -46,19 +64,7 @@ async function querySalesforceContacts(
 					console.error("Got an error while fetching chunk:", error.message);
 					return [];
 				}
-				return records.map(record => {
-					return {
-						Id: record.Id,
-						Email: record.Email,
-						Name: record.Name,
-						FirstName: record.FirstName,
-						LastName: record.LastName,
-						Phone: record.Phone,
-						MobilePhone: record.MobilePhone,
-						HomePhone: record.HomePhone,
-						CreatedDate: record.CreatedDate
-					};
-				});
+				return records;
 			});
 
 		const newContacts: SalesforceContact[] = result;

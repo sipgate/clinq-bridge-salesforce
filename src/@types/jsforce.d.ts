@@ -60,7 +60,16 @@ declare module "jsforce" {
 		where(query: string): this;
 		limit(limit: number): this;
 		orderby(field: string, mode: string): this;
-		execute<T>(callback: (error: Error, records: T[]) => T[]): Promise<T[]>
+		execute<T>(callback: (error: Error, records: T[]) => T[]): Promise<T[]>;
+		describe(callback: (error: Error, meta: Meta) => void): this;
+	}
+
+	interface FieldDescription {
+		name: string;
+	}
+
+	interface Meta {
+		fields: FieldDescription[];
 	}
 
 	class CRUDResponse {
