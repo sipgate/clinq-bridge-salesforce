@@ -55,8 +55,12 @@ declare module "jsforce" {
 		create(object: SalesforceContact): Promise<CRUDResponse>;
 		update(object: SalesforceContact): Promise<CRUDResponse>;
 		destroy(id: string): Promise<CRUDResponse>;
-		select(fields: string): any;
-		execute(callback: () => void): any;
+		select(fields: string): this;
+		execute(callback: () => void): this;
+		where(query: string): this;
+		limit(limit: number): this;
+		orderby(field: string, mode: string): this;
+		execute<T>(callback: (error: Error, records: T[]) => T[]): Promise<T[]>
 	}
 
 	class CRUDResponse {

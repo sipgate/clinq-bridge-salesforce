@@ -41,7 +41,7 @@ async function querySalesforceContacts(
 			.where(additionalCondition)
 			.limit(2000)
 			.orderby("CreatedDate", "ASC")
-			.execute((error, records) => {
+			.execute<SalesforceContact>((error, records) => {
 				if (error || !records) {
 					console.error("Got an error while fetching chunk:", error.message);
 					return [];
