@@ -10,7 +10,7 @@ import {
 import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
 import { promisify } from "util";
-import { contactHasPhoneNumber, convertFromSalesforceContact, parseEnvironment } from "./util";
+import { convertFromSalesforceContact, parseEnvironment } from "./util";
 import { anonymizeKey } from "./util/anonymize-key";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
 
@@ -109,9 +109,7 @@ class SalesforceAdapter implements Adapter {
 			console.log(
 				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
 			);
-			const parsedContacts: Contact[] = contacts
-				.filter(contactHasPhoneNumber)
-				.map(convertFromSalesforceContact);
+			const parsedContacts: Contact[] = contacts.map(convertFromSalesforceContact);
 			console.log(
 				`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
 			);
