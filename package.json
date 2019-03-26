@@ -15,16 +15,16 @@
 		"watch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
 	},
 	"dependencies": {
-		"@clinq/bridge": "^7.7.1",
+		"@clinq/bridge": "^9.0.3",
 		"@types/express": "^4.16.1",
-		"@types/node": "^10.12.18",
+		"@types/node": "^11.11.7",
 		"jsforce": "^1.9.1",
-		"typescript": "^3.2.4"
+		"typescript": "^3.3.4000"
 	},
 	"devDependencies": {
-		"nodemon": "^1.18.9",
-		"ts-node": "^8.0.2",
-		"tslint": "^5.12.1",
-		"tslint-config-prettier": "^1.17.0"
+		"nodemon": "^1.18.10",
+		"ts-node": "^8.0.3",
+		"tslint": "^5.14.0",
+		"tslint-config-prettier": "^1.18.0"
 	}
 }
