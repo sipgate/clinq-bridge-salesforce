@@ -201,14 +201,12 @@ class SalesforceAdapter implements Adapter {
 				.sobject("Contact")
 				.find({
 					$or: {
-						MobilePhone: localized,
-						Phone: localized,
-						HomePhone: localized
+						MobilePhone: {$in: [localized, e164]},
+						Phone: {$in: [localized, e164]},
+						HomePhone: {$in: [localized, e164]}
 					}
 				})
 				.execute<SalesforceContact>(handleExecute);
-
-			console.log(result.length);
 
 			const contact = result.find(Boolean);
 			if (!contact) {
