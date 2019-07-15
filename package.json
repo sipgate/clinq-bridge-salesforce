@@ -12,7 +12,7 @@
 	"scripts": {
 		"postinstall": "tsc",
 		"start": "node dist/index",
-		"watch": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
+		"watch": "ts-node-dev src/index.ts"
 	},
 	"dependencies": {
 		"@clinq/bridge": "^10.0.4",
@@ -22,8 +22,8 @@
 		"typescript": "^3.5.1"
 	},
 	"devDependencies": {
-		"nodemon": "^1.19.1",
 		"ts-node": "^8.2.0",
+		"ts-node-dev": "^1.0.0-pre.40",
 		"tslint": "^5.17.0",
 		"tslint-config-prettier": "^1.18.0"
 	}
