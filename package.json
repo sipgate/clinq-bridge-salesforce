@@ -1,6 +1,6 @@
 {
 	"name": "clinq-bridge-salesforce",
-	"version": "0.1.0",
+	"private": true,
 	"description": "CLINQ CRM-Bridge for Salesforce",
 	"main": "dist/index.js",
 	"repository": "git@github.com:fgladisch/clinq-bridge-salesforce.git",
