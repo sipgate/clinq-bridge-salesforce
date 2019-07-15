@@ -12,10 +12,14 @@ import {
 import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
 import { promisify } from "util";
-import { convertFromSalesforceContact, parseEnvironment } from "./util";
-import { anonymizeKey } from "./util/anonymize-key";
+import {
+	anonymizeKey,
+	convertFromSalesforceContact,
+	formatDuration,
+	parseEnvironment,
+	parsePhoneNumber
+} from "./util";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
-import { formatDuration } from "./util/duration";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
@@ -187,15 +191,24 @@ class SalesforceAdapter implements Adapter {
 
 	public async handleCallEvent(
 		{ apiKey, apiUrl }: Config,
-		{ direction, from, to, channel, start, end, id, user }: CallEvent
+		{ direction, from, to, channel, start, end }: CallEvent
 	): Promise<void> {
 		try {
 			const connection = createSalesforceConnection({ apiKey, apiUrl });
 			const phoneNumber = direction === CallDirection.IN ? from : to;
+			const { e164, localized } = parsePhoneNumber(phoneNumber);
 			const result = await connection
 				.sobject("Contact")
-				.find({ $or: { MobilePhone: phoneNumber, Phone: phoneNumber, HomePhone: phoneNumber } })
+				.find({
+					$or: {
+						MobilePhone: localized,
+						Phone: localized,
+						HomePhone: localized
+					}
+				})
 				.execute<SalesforceContact>(handleExecute);
+
+			console.log(result.length);
 
 			const contact = result.find(Boolean);
 			if (!contact) {
