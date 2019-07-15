@@ -216,7 +216,7 @@ class SalesforceAdapter implements Adapter {
 			await connection.sobject("Task").create(task);
 
 		} catch (error) {
-			console.error("Could not save CallEvent");
+			console.error("Could not save CallEvent", error.message);
 			throw new ServerError(400, "Could not save CallEvent");
 		}
 	}
