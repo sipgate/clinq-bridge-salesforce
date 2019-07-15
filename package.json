@@ -15,16 +15,17 @@
 		"watch": "ts-node-dev src/index.ts"
 	},
 	"dependencies": {
-		"@clinq/bridge": "^10.0.4",
+		"@clinq/bridge": "^10.0.8",
 		"@types/express": "^4.17.0",
-		"@types/node": "^12.0.7",
+		"@types/node": "^12.6.2",
 		"jsforce": "^1.9.1",
-		"typescript": "^3.5.1"
+		"moment": "^2.24.0",
+		"typescript": "^3.5.3"
 	},
 	"devDependencies": {
-		"ts-node": "^8.2.0",
+		"ts-node": "^8.3.0",
 		"ts-node-dev": "^1.0.0-pre.40",
-		"tslint": "^5.17.0",
+		"tslint": "^5.18.0",
 		"tslint-config-prettier": "^1.18.0"
 	}
 }

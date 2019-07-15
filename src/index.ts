@@ -1,11 +1,13 @@
 import {
 	Adapter,
+	CallDirection,
+	CallEvent,
 	Config,
 	Contact,
 	ContactTemplate,
 	ContactUpdate,
 	ServerError,
-	start
+	start as startBridge
 } from "@clinq/bridge";
 import { Request } from "express";
 import { Connection, OAuth2, OAuth2Options, SalesforceContact } from "jsforce";
@@ -13,6 +15,7 @@ import { promisify } from "util";
 import { convertFromSalesforceContact, parseEnvironment } from "./util";
 import { anonymizeKey } from "./util/anonymize-key";
 import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
+import {formatDuration} from "./util/duration";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
@@ -59,13 +62,7 @@ async function querySalesforceContacts(
 			.where(additionalCondition)
 			.limit(2000)
 			.orderby("CreatedDate", "ASC")
-			.execute<SalesforceContact>((error, records) => {
-				if (error || !records) {
-					console.error("Got an error while fetching chunk:", error.message);
-					return [];
-				}
-				return records;
-			});
+			.execute<SalesforceContact>(handleExecute);
 
 		const newContacts: SalesforceContact[] = result;
 
@@ -99,6 +96,16 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 		phoneNumbers: Array.isArray(contact.phoneNumbers) ? contact.phoneNumbers : []
 	};
 }
+
+function handleExecute(error: Error, records: SalesforceContact[]): SalesforceContact[]{
+	if (error || !records) {
+		console.error("Got an error while fetching chunk:", error.message);
+		return [];
+	}
+	return records;
+}
+
+
 
 class SalesforceAdapter implements Adapter {
 	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
@@ -179,6 +186,40 @@ class SalesforceAdapter implements Adapter {
 			apiUrl: connection.instanceUrl
 		};
 	}
+
+	public async handleCallEvent({apiKey, apiUrl}: Config, {direction, from, to, channel, start, end, id, user}: CallEvent): Promise<void> {
+		try {
+			const connection = createSalesforceConnection({ apiKey, apiUrl });
+			const phoneNumber = direction === CallDirection.IN? from: to;
+			const result = await connection.sobject("Contact")
+				.find({$or: {MobilePhone: phoneNumber, Phone: phoneNumber, HomePhone: phoneNumber}})
+				.execute<SalesforceContact>(handleExecute);
+
+			const contact = result.find(Boolean);
+			if(!contact){
+				throw new Error("Could not find contact for call event");
+			}
+
+			const directionInfo = direction === CallDirection.IN? "Incoming": "Outgoing";
+			const date = new Date(start);
+			const duration = formatDuration(end - start);
+
+			const task = {
+				WhoId: contact.Id,
+				CallDisposition: channel.name,
+				ActivityDate: `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`,
+				Status: "Completed",
+				TaskSubType: "Call",
+				Subject: `${directionInfo} CLINQ call in "${channel.name}" (${duration})`,
+
+			};
+			await connection.sobject("Task").create(task);
+
+		} catch (error) {
+			console.error("Could not save CallEvent");
+			throw new ServerError(400, "Could not save CallEvent");
+		}
+	}
 }
 
-start(new SalesforceAdapter());
+startBridge(new SalesforceAdapter());

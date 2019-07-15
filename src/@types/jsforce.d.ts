@@ -1,3 +1,5 @@
+import { SalesforceAttributes } from "jsforce";
+
 declare module "jsforce" {
 	interface SalesforceAttributes {
 		type: string | undefined;
@@ -15,6 +17,19 @@ declare module "jsforce" {
 		HomePhone?: string | null;
 		CreatedDate?: string;
 		attributes?: SalesforceAttributes | null;
+	}
+
+	interface SalesforceTask {
+		Id?: string;
+		WhoId?: string;
+		CallType?: "Inbound" | "Outbound";
+		CallDurationInSeconds?: number;
+		CallDisposition?: string;
+		ActivityDate?: string;
+		TaskSubType?: string;
+		Status?: string;
+		Subject?: string;
+		CallObject?: string;
 	}
 
 	class OAuth2 {
@@ -52,7 +67,7 @@ declare module "jsforce" {
 	}
 
 	class SObject {
-		create(object: SalesforceContact): Promise<CRUDResponse>;
+		create(object: SalesforceContact | SalesforceTask): Promise<CRUDResponse>;
 		update(object: SalesforceContact): Promise<CRUDResponse>;
 		destroy(id: string): Promise<CRUDResponse>;
 		select(fields: string): this;
@@ -62,6 +77,7 @@ declare module "jsforce" {
 		orderby(field: string, mode: string): this;
 		execute<T>(callback: (error: Error, records: T[]) => T[]): Promise<T[]>;
 		describe(callback: (error: Error, meta: Meta) => void): this;
+		find(query: any): this;
 	}
 
 	interface FieldDescription {
