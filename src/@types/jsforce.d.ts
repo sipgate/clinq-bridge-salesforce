@@ -1,6 +1,6 @@
-import { SalesforceAttributes } from "jsforce";
-
 declare module "jsforce" {
+	import { SalesforceAttributes } from "jsforce";
+
 	interface SalesforceAttributes {
 		type: string | undefined;
 		url: string | undefined;
