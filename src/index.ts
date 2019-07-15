@@ -210,7 +210,7 @@ class SalesforceAdapter implements Adapter {
 
 			const contact = result.find(Boolean);
 			if (!contact) {
-				throw new Error("Could not find contact for call event");
+				return;
 			}
 
 			const directionInfo = direction === CallDirection.IN ? "Incoming" : "Outgoing";
