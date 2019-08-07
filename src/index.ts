@@ -110,17 +110,19 @@ function handleExecute(error: Error, records: SalesforceContact[]): SalesforceCo
 }
 
 class SalesforceAdapter implements Adapter {
-	public async getContacts({ apiKey, apiUrl }: Config): Promise<Contact[]> {
+	public async getContacts(config: Config): Promise<Contact[]> {
 		try {
-			const connection = createSalesforceConnection({ apiKey, apiUrl });
+			const connection = createSalesforceConnection(config);
 			const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
-			const anonymizedKey = anonymizeKey(apiKey);
+			const anonymizedKey = anonymizeKey(config.apiKey);
 			console.log(
-				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${apiUrl}`
+				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${
+					config.apiUrl
+				}`
 			);
 			const parsedContacts: Contact[] = contacts.map(convertFromSalesforceContact);
 			console.log(
-				`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${apiUrl}`
+				`Parsed ${parsedContacts.length} contacts for API key ${anonymizedKey} on ${config.apiUrl}`
 			);
 			return parsedContacts;
 		} catch (error) {
@@ -179,7 +181,7 @@ class SalesforceAdapter implements Adapter {
 		return Promise.resolve(redirectUrl);
 	}
 
-	public async handleOAuth2Callback(req: Request): Promise<Config> {
+	public async handleOAuth2Callback(req: Request): Promise<{ apiKey: string; apiUrl: string }> {
 		const connection: Connection = new Connection({ oauth2 });
 		const { code } = req.query;
 		await connection.authorize(code);
@@ -190,20 +192,20 @@ class SalesforceAdapter implements Adapter {
 	}
 
 	public async handleCallEvent(
-		{ apiKey, apiUrl }: Config,
+		config: Config,
 		{ direction, from, to, channel, start, end }: CallEvent
 	): Promise<void> {
 		try {
-			const connection = createSalesforceConnection({ apiKey, apiUrl });
+			const connection = createSalesforceConnection(config);
 			const phoneNumber = direction === CallDirection.IN ? from : to;
 			const { e164, localized } = parsePhoneNumber(phoneNumber);
 			const result = await connection
 				.sobject("Contact")
 				.find({
 					$or: {
-						MobilePhone: {$in: [localized, e164]},
-						Phone: {$in: [localized, e164]},
-						HomePhone: {$in: [localized, e164]}
+						MobilePhone: { $in: [localized, e164] },
+						Phone: { $in: [localized, e164] },
+						HomePhone: { $in: [localized, e164] }
 					}
 				})
 				.execute<SalesforceContact>(handleExecute);
