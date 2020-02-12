@@ -1,5 +1,5 @@
 declare module "jsforce" {
-	import { SalesforceAttributes } from "jsforce";
+	// import { SalesforceAttributes } from "jsforce";
 
 	interface SalesforceAttributes {
 		type: string | undefined;
