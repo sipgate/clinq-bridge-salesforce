@@ -116,6 +116,9 @@ async function getContactByPhoneOrMobilePhone(
 				}
 			})
 			.execute<SalesforceContact>(handleExecute);
+		console.log(
+			`Getting contact by phone or mobile phone with numbers ${localized} or ${e164} returned ${result.length} results.`
+		);
 		const contact = result.find(Boolean);
 		return contact;
 	} catch (e) {
@@ -136,6 +139,9 @@ async function getContactByHomePhone(
 				HomePhone: { $in: [localized, e164] }
 			})
 			.execute<SalesforceContact>(handleExecute);
+		console.log(
+			`Getting contact by home phone with numbers ${localized} or ${e164} returned ${result.length} results.`
+		);
 		const contact = result.find(Boolean);
 		return contact;
 	} catch (e) {
