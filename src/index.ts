@@ -101,6 +101,51 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 	};
 }
 
+async function getContactByPhoneOrMobilePhone(
+	connection: Connection,
+	localized: string,
+	e164: string
+): Promise<SalesforceContact | null> {
+	try {
+		const result = await connection
+			.sobject("Contact")
+			.find({
+				$or: {
+					MobilePhone: { $in: [localized, e164] },
+					Phone: { $in: [localized, e164] }
+				}
+			})
+			.execute<SalesforceContact>(handleExecute);
+		const contact = result.find(Boolean);
+		return contact;
+	} catch (e) {
+		console.error("Error getting contact by Phone or MobilePhone", e);
+		return null;
+	}
+}
+
+async function getContactByHomePhone(
+	connection: Connection,
+	localized: string,
+	e164: string
+): Promise<SalesforceContact | null> {
+	try {
+		const result = await connection
+			.sobject("Contact")
+			.find({
+				$or: {
+					HomePhone: { $in: [localized, e164] }
+				}
+			})
+			.execute<SalesforceContact>(handleExecute);
+		const contact = result.find(Boolean);
+		return contact;
+	} catch (e) {
+		console.warn("Unable to get contact by HomePhone", e);
+		return null;
+	}
+}
+
 function handleExecute(error: Error, records: SalesforceContact[]): SalesforceContact[] {
 	if (error || !records) {
 		console.error("Got an error while fetching chunk:", error.message);
@@ -116,9 +161,7 @@ class SalesforceAdapter implements Adapter {
 			const contacts: SalesforceContact[] = await querySalesforceContacts(connection, []);
 			const anonymizedKey = anonymizeKey(config.apiKey);
 			console.log(
-				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${
-					config.apiUrl
-				}`
+				`Found ${contacts.length} Salesforce contacts for API key ${anonymizedKey} on ${config.apiUrl}`
 			);
 			const parsedContacts: Contact[] = contacts.map(convertFromSalesforceContact);
 			console.log(
@@ -199,18 +242,11 @@ class SalesforceAdapter implements Adapter {
 			const connection = createSalesforceConnection(config);
 			const phoneNumber = direction === CallDirection.IN ? from : to;
 			const { e164, localized } = parsePhoneNumber(phoneNumber);
-			const result = await connection
-				.sobject("Contact")
-				.find({
-					$or: {
-						MobilePhone: { $in: [localized, e164] },
-						Phone: { $in: [localized, e164] },
-						HomePhone: { $in: [localized, e164] }
-					}
-				})
-				.execute<SalesforceContact>(handleExecute);
+			const phoneContact = await getContactByPhoneOrMobilePhone(connection, localized, e164);
+			const homePhoneContact = await getContactByHomePhone(connection, localized, e164);
 
-			const contact = result.find(Boolean);
+			const contact = phoneContact || homePhoneContact;
+
 			if (!contact) {
 				return;
 			}
