@@ -106,22 +106,17 @@ async function getContactByPhoneOrMobilePhone(
 	localized: string,
 	e164: string
 ): Promise<SalesforceContact | null> {
-	try {
-		const result = await connection
-			.sobject("Contact")
-			.find({
-				$or: {
-					MobilePhone: { $in: [localized, e164] },
-					Phone: { $in: [localized, e164] }
-				}
-			})
-			.execute<SalesforceContact>(handleExecute);
-		const contact = result.find(Boolean);
-		return contact;
-	} catch (e) {
-		console.error("Error getting contact by Phone or MobilePhone", e);
-		return null;
-	}
+	const result = await connection
+		.sobject("Contact")
+		.find({
+			$or: {
+				MobilePhone: { $in: [localized, e164] },
+				Phone: { $in: [localized, e164] }
+			}
+		})
+		.execute<SalesforceContact>(handleExecute);
+	const contact = result.find(Boolean);
+	return contact;
 }
 
 async function getContactByHomePhone(
@@ -129,26 +124,21 @@ async function getContactByHomePhone(
 	localized: string,
 	e164: string
 ): Promise<SalesforceContact | null> {
-	try {
-		const result = await connection
-			.sobject("Contact")
-			.find({
-				$or: {
-					HomePhone: { $in: [localized, e164] }
-				}
-			})
-			.execute<SalesforceContact>(handleExecute);
-		const contact = result.find(Boolean);
-		return contact;
-	} catch (e) {
-		console.warn("Unable to get contact by HomePhone", e);
-		return null;
-	}
+	const result = await connection
+		.sobject("Contact")
+		.find({
+			$or: {
+				HomePhone: { $in: [localized, e164] }
+			}
+		})
+		.execute<SalesforceContact>(handleExecute);
+	const contact = result.find(Boolean);
+	return contact;
 }
 
 function handleExecute(error: Error, records: SalesforceContact[]): SalesforceContact[] {
 	if (error || !records) {
-		console.error("Got an error while fetching chunk:", error.message);
+		console.error("Error while executing query:", error);
 		return [];
 	}
 	return records;
@@ -242,12 +232,14 @@ class SalesforceAdapter implements Adapter {
 			const connection = createSalesforceConnection(config);
 			const phoneNumber = direction === CallDirection.IN ? from : to;
 			const { e164, localized } = parsePhoneNumber(phoneNumber);
+			const anonymizedKey = anonymizeKey(config.apiKey);
 			const phoneContact = await getContactByPhoneOrMobilePhone(connection, localized, e164);
 			const homePhoneContact = await getContactByHomePhone(connection, localized, e164);
 
 			const contact = phoneContact || homePhoneContact;
 
 			if (!contact) {
+				console.log(`Unable to find contact for ${anonymizedKey} with phoneNumber ${phoneNumber}`);
 				return;
 			}
 
@@ -264,6 +256,7 @@ class SalesforceAdapter implements Adapter {
 				Subject: `${directionInfo} CLINQ call in "${channel.name}" (${duration})`
 			};
 			await connection.sobject("Task").create(task);
+			console.log(`Successfully added call event for ${anonymizedKey} with phoneNumber ${phoneNumber}`);
 		} catch (error) {
 			console.error("Could not save CallEvent", error.message);
 			throw new ServerError(400, "Could not save CallEvent");
