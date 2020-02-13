@@ -103,21 +103,22 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 
 async function getContactByPhoneOrMobilePhone(
 	connection: Connection,
-	localized: string,
-	e164: string
+	phoneNumber: string
 ): Promise<SalesforceContact | null> {
 	try {
+		const numbers = getFormattedNumbers(phoneNumber);
 		const result = await connection
 			.sobject("Contact")
 			.find({
 				$or: {
-					MobilePhone: { $in: [localized, e164, `+${e164}`] },
-					Phone: { $in: [localized, e164, `+${e164}`] }
+					MobilePhone: { $in: numbers },
+					Phone: { $in: numbers }
 				}
 			})
 			.execute<SalesforceContact>(handleExecute);
 		console.log(
-			`Getting contact by phone or mobile phone with numbers ${localized} or ${e164} returned ${result.length} results.`
+			`Getting contact by phone or mobile phone returned ${result.length} results.`,
+			numbers
 		);
 		const contact = result.find(Boolean);
 		return contact;
@@ -127,21 +128,24 @@ async function getContactByPhoneOrMobilePhone(
 	}
 }
 
+function getFormattedNumbers(phoneNumber: string): string[] {
+	const { e164, localized } = parsePhoneNumber(phoneNumber);
+	return [localized, e164, `+${e164}`];
+}
+
 async function getContactByHomePhone(
 	connection: Connection,
-	localized: string,
-	e164: string
+	phoneNumber: string
 ): Promise<SalesforceContact | null> {
 	try {
+		const numbers = getFormattedNumbers(phoneNumber);
 		const result = await connection
 			.sobject("Contact")
 			.find({
-				HomePhone: { $in: [localized, e164,`+${e164}`] }
+				HomePhone: { $in: numbers }
 			})
 			.execute<SalesforceContact>(handleExecute);
-		console.log(
-			`Getting contact by home phone with numbers ${localized} or ${e164} returned ${result.length} results.`
-		);
+		console.log(`Getting contact by home phone returned ${result.length} results.`, numbers);
 		const contact = result.find(Boolean);
 		return contact;
 	} catch (e) {
@@ -245,10 +249,9 @@ class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			const phoneNumber = direction === CallDirection.IN ? from : to;
-			const { e164, localized } = parsePhoneNumber(phoneNumber);
 			const anonymizedKey = anonymizeKey(config.apiKey);
-			const phoneContact = await getContactByPhoneOrMobilePhone(connection, localized, e164);
-			const homePhoneContact = await getContactByHomePhone(connection, localized, e164);
+			const phoneContact = await getContactByPhoneOrMobilePhone(connection, phoneNumber);
+			const homePhoneContact = await getContactByHomePhone(connection, phoneNumber);
 
 			const contact = phoneContact || homePhoneContact;
 
