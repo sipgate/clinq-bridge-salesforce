@@ -111,8 +111,8 @@ async function getContactByPhoneOrMobilePhone(
 			.sobject("Contact")
 			.find({
 				$or: {
-					MobilePhone: { $in: [localized, e164] },
-					Phone: { $in: [localized, e164] }
+					MobilePhone: { $in: [localized, e164, `+${e164}`] },
+					Phone: { $in: [localized, e164, `+${e164}`] }
 				}
 			})
 			.execute<SalesforceContact>(handleExecute);
@@ -136,7 +136,7 @@ async function getContactByHomePhone(
 		const result = await connection
 			.sobject("Contact")
 			.find({
-				HomePhone: { $in: [localized, e164] }
+				HomePhone: { $in: [localized, e164,`+${e164}`] }
 			})
 			.execute<SalesforceContact>(handleExecute);
 		console.log(
