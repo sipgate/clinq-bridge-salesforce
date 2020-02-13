@@ -106,17 +106,22 @@ async function getContactByPhoneOrMobilePhone(
 	localized: string,
 	e164: string
 ): Promise<SalesforceContact | null> {
-	const result = await connection
-		.sobject("Contact")
-		.find({
-			$or: {
-				MobilePhone: { $in: [localized, e164] },
-				Phone: { $in: [localized, e164] }
-			}
-		})
-		.execute<SalesforceContact>(handleExecute);
-	const contact = result.find(Boolean);
-	return contact;
+	try {
+		const result = await connection
+			.sobject("Contact")
+			.find({
+				$or: {
+					MobilePhone: { $in: [localized, e164] },
+					Phone: { $in: [localized, e164] }
+				}
+			})
+			.execute<SalesforceContact>(handleExecute);
+		const contact = result.find(Boolean);
+		return contact;
+	} catch (e) {
+		console.warn("Unable to find contact by HomePhone", e);
+		return null;
+	}
 }
 
 async function getContactByHomePhone(
@@ -124,16 +129,19 @@ async function getContactByHomePhone(
 	localized: string,
 	e164: string
 ): Promise<SalesforceContact | null> {
-	const result = await connection
-		.sobject("Contact")
-		.find({
-			$or: {
+	try {
+		const result = await connection
+			.sobject("Contact")
+			.find({
 				HomePhone: { $in: [localized, e164] }
-			}
-		})
-		.execute<SalesforceContact>(handleExecute);
-	const contact = result.find(Boolean);
-	return contact;
+			})
+			.execute<SalesforceContact>(handleExecute);
+		const contact = result.find(Boolean);
+		return contact;
+	} catch (e) {
+		console.warn("Unable to find contact by HomePhone", e);
+		return null;
+	}
 }
 
 function handleExecute(error: Error, records: SalesforceContact[]): SalesforceContact[] {
@@ -239,7 +247,9 @@ class SalesforceAdapter implements Adapter {
 			const contact = phoneContact || homePhoneContact;
 
 			if (!contact) {
-				console.log(`Unable to find contact for ${anonymizedKey} with phoneNumber ${phoneNumber}`);
+				console.log(
+					`Unable to find a contact for ${anonymizedKey} with phoneNumber ${phoneNumber}`
+				);
 				return;
 			}
 
@@ -256,7 +266,9 @@ class SalesforceAdapter implements Adapter {
 				Subject: `${directionInfo} CLINQ call in "${channel.name}" (${duration})`
 			};
 			await connection.sobject("Task").create(task);
-			console.log(`Successfully added call event for ${anonymizedKey} with phoneNumber ${phoneNumber}`);
+			console.log(
+				`Successfully added call event for ${anonymizedKey} with phoneNumber ${phoneNumber}`
+			);
 		} catch (error) {
 			console.error("Could not save CallEvent", error.message);
 			throw new ServerError(400, "Could not save CallEvent");
