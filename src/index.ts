@@ -19,7 +19,10 @@ import {
 	parseEnvironment,
 	parsePhoneNumber
 } from "./util";
-import { convertToSalesforceContact } from "./util/convert-to-salesforce-contact";
+import {
+	convertToSalesforceContact,
+	convertToSalesforceContactWithCustomHomePhone
+} from "./util/convert-to-salesforce-contact";
 
 const oauth2Options: OAuth2Options = parseEnvironment();
 const oauth2: OAuth2 = new OAuth2(oauth2Options);
@@ -99,6 +102,38 @@ function createContactResponse(id: string, contact: ContactTemplate | ContactUpd
 		avatarUrl: null,
 		phoneNumbers: Array.isArray(contact.phoneNumbers) ? contact.phoneNumbers : []
 	};
+}
+
+async function updateContact(
+	config: Config,
+	id: string,
+	salesforceContact: SalesforceContact,
+	contact: ContactUpdate
+): Promise<Contact> {
+	const connection = createSalesforceConnection(config);
+	const response = await connection.sobject("Contact").update({ Id: id, ...salesforceContact });
+	const contactResponse = createContactResponse(response.id, contact);
+	return contactResponse;
+}
+
+async function updateStandardContact(
+	contact: ContactUpdate,
+	config: Config,
+	id: string
+): Promise<Contact> {
+	const salesforceContact = convertToSalesforceContact(contact);
+	const contactResponse = await updateContact(config, id, salesforceContact, contact);
+	return contactResponse;
+}
+
+async function updateContactWithCustomHomePhone(
+	contact: ContactUpdate,
+	config: Config,
+	id: string
+): Promise<Contact> {
+	const salesforceContact = convertToSalesforceContactWithCustomHomePhone(contact);
+	const contactResponse = await updateContact(config, id, salesforceContact, contact);
+	return contactResponse;
 }
 
 async function getContactByPhoneOrMobilePhone(
@@ -198,16 +233,28 @@ class SalesforceAdapter implements Adapter {
 	}
 
 	public async updateContact(config: Config, id: string, contact: ContactUpdate): Promise<Contact> {
-		const salesforceContact = convertToSalesforceContact(contact);
 		const anonymizedKey = anonymizeKey(config.apiKey);
 		try {
-			const connection = createSalesforceConnection(config);
-			const response = await connection.sobject("Contact").update({ Id: id, ...salesforceContact });
-			return createContactResponse(response.id, contact);
+			const contactResponse = await updateStandardContact(contact, config, id);
+			return contactResponse;
 		} catch (error) {
-			console.log(`Could not update contact for ${anonymizedKey}`, error.message);
+			console.log(`Could not update contact for ${anonymizedKey}`, error);
 			if (error.name === "ENTITY_IS_DELETED" || error.name === "INVALID_CROSS_REFERENCE_KEY") {
 				throw new ServerError(404, "Contact not found.");
+			}
+			// Apparently sometimes a salesforce contact doesn't have HomePhone as a default field
+			// We then try to save the number in HomePhone__c as a custom field
+			if (/HomePhone/g.test(error.message)) {
+				try {
+					const contactResponseWithCustomHomePhone = await updateContactWithCustomHomePhone(contact, config, id);
+					return contactResponseWithCustomHomePhone;
+				} catch (error2) {
+					console.log(
+						`Could not update contact with custom home phone for ${anonymizedKey}`,
+						error
+					);
+					throw new ServerError(400, "Could not save CallEvent");
+				}
 			}
 		}
 	}
