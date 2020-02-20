@@ -1,6 +1,6 @@
 import { Adapter, Config, Contact, ContactTemplate, ServerError, ContactUpdate, CallEvent, CallDirection } from "@clinq/bridge";
 import { createSalesforceConnection, querySalesforceContacts, createContactResponse, updateStandardContact, tryUpdateContactWithCustomHomePhone, oauth2, getContactByPhoneOrMobilePhone, getContactByHomePhone, getContactByCustomHomePhone } from "./salesforce";
-import { Connection, SuccessResult } from "jsforce";
+import { Connection } from "jsforce";
 import { anonymizeKey, convertFromSalesforceContact, convertToSalesforceContact, formatDuration } from "./util";
 import { Request } from "express";
 import { log } from "./util/logger";
@@ -12,7 +12,6 @@ export default class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			const contacts: SalesforceContact[] = await querySalesforceContacts(config, connection, []);
-			const anonymizedKey = anonymizeKey(config.apiKey);
 			log(
 				config,
 				`Found ${contacts.length} Salesforce contacts`,
@@ -45,8 +44,8 @@ export default class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			const response = await connection.sobject("Contact").create(salesforceContact);
-			const successResponse = response as SuccessResult;
-			return createContactResponse(successResponse.id, contact);
+			// const successResponse = response as SuccessResult;
+			return createContactResponse(response.id, contact);
 		} catch (error) {
 			log(config, "Could not create contact", error);
 			if (error.name === "DUPLICATES_DETECTED") {

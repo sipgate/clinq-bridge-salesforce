@@ -1,9 +1,9 @@
-import { Connection, SalesforceContact } from "jsforce";
-import { promisify } from "util";
-import { handleExecute } from "./execute";
-import { RELEVANT_CONTACT_FIELDS } from "./auth";
-import { log } from "../util/logger";
 import { Config } from "@clinq/bridge";
+import { Connection } from "jsforce";
+import { promisify } from "util";
+import { SalesforceContact } from "../models/salesforce-contact";
+import { log } from "../util/logger";
+import { RELEVANT_CONTACT_FIELDS } from "./auth";
 
 export async function querySalesforceContacts(
 	config: Config,
@@ -17,7 +17,8 @@ export async function querySalesforceContacts(
 
 		const sobjectContact = connection.sobject("Contact");
 
-		const describeResult = await promisify(sobjectContact.describe)();
+		const describeResult = await sobjectContact.describe();
+
 		const fields = describeResult.fields
 			.map(entry => entry.name)
 			.filter(field => RELEVANT_CONTACT_FIELDS.includes(field));
@@ -27,7 +28,7 @@ export async function querySalesforceContacts(
 			.where(additionalCondition)
 			.limit(2000)
 			.orderby("CreatedDate", "ASC")
-			.execute<SalesforceContact>(handleExecute);
+			.execute();
 
 		const newContacts: SalesforceContact[] = result;
 

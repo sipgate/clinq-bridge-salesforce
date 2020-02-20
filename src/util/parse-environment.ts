@@ -1,4 +1,4 @@
-import { OAuth2Options } from "jsforce";
+import { OAuth2Options } from "../models/oauth2";
 
 const {
 	SF_OAUTH_PROVIDER_CLIENT_ID: clientId,

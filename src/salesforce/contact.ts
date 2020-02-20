@@ -1,14 +1,9 @@
 import { Config, Contact, ContactTemplate, ContactUpdate, ServerError } from "@clinq/bridge";
-import { Connection, SuccessResult } from "jsforce";
+import { Connection } from "jsforce";
 import { SalesforceContact } from "../models/salesforce-contact";
-import {
-	convertToSalesforceContact,
-	convertToSalesforceContactWithCustomHomePhone,
-	parsePhoneNumber
-} from "../util";
+import { convertToSalesforceContact, convertToSalesforceContactWithCustomHomePhone, parsePhoneNumber } from "../util";
 import { log } from "../util/logger";
 import { createSalesforceConnection } from "./connection";
-import { handleExecute } from "./execute";
 
 export async function getContactByPhoneOrMobilePhone(
 	config: Config,
@@ -25,7 +20,7 @@ export async function getContactByPhoneOrMobilePhone(
 					Phone: { $in: numbers }
 				}
 			})
-			.execute({}, handleExecute);
+			.execute();
 
 		log(
 			config,
@@ -61,7 +56,7 @@ export async function getContactByHomePhone(
 			.find<SalesforceContact>({
 				HomePhone: { $in: numbers }
 			})
-			.execute({}, handleExecute);
+			.execute();
 			log(
 				config,
 				`Getting contact by home HomePhone ${result.length} results.`,
@@ -91,7 +86,7 @@ export async function getContactByCustomHomePhone(
 			.find<SalesforceContact>({
 				HomePhone__c: { $in: numbers }
 			})
-			.execute({}, handleExecute);
+			.execute();
 		log(config, `Getting contact by HomePhone__c returned ${result.length} results.`, numbers);
 		const contact = result.find(Boolean);
 		return contact;
@@ -126,11 +121,7 @@ export async function updateContact(
 ): Promise<Contact> {
 	const connection = createSalesforceConnection(config);
 	const response = await connection.sobject("Contact").update({ Id: id, ...salesforceContact });
-
-	// Cast response to SuccessResult for typescript
-	const successResponse = response as SuccessResult;
-
-	const contactResponse = createContactResponse(successResponse.id, contact);
+	const contactResponse = createContactResponse(response.id, contact);
 	return contactResponse;
 }
 

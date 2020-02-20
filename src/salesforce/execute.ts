@@ -1,5 +1,4 @@
-import { SalesforceContact } from "jsforce";
-
+import { SalesforceContact } from "../models/salesforce-contact";
 
 export function handleExecute(error: Error, records: SalesforceContact[]): SalesforceContact[] {
 	if (error || !records) {
