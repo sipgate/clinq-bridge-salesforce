@@ -56,6 +56,7 @@ export default class SalesforceAdapter implements Adapter {
 	}
 
 	public async updateContact(config: Config, id: string, contact: ContactUpdate): Promise<Contact> {
+		return tryUpdateContactWithCustomHomePhone(config, id, contact);
 		try {
 			const contactResponse = await updateStandardContact(contact, config, id);
 			return contactResponse;

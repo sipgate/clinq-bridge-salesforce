@@ -179,7 +179,7 @@ export async function tryUpdateContactWithCustomHomePhone(
 	contact: ContactUpdate
 ): Promise<Contact> {
 	try {
-		await createHomePhoneCustomField(config);
+		// await createHomePhoneCustomField(config);
 		const contactResponseWithCustomHomePhone = await updateContactWithCustomHomePhone(
 			contact,
 			config,
