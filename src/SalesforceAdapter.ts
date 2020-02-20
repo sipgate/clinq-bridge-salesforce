@@ -1,9 +1,34 @@
-import { Adapter, CallDirection, CallEvent, Config, Contact, ContactTemplate, ContactUpdate, ServerError } from "@clinq/bridge";
+import {
+	Adapter,
+	CallDirection,
+	CallEvent,
+	Config,
+	Contact,
+	ContactTemplate,
+	ContactUpdate,
+	ServerError
+} from "@clinq/bridge";
 import { Request } from "express";
 import { Connection, SuccessResult } from "jsforce";
 import { SalesforceContact } from "./models/salesforce-contact";
-import { createContactResponse, createSalesforceConnection, getContactByCustomHomePhone, getContactByHomePhone, getContactByPhoneOrMobilePhone, oauth2, querySalesforceContacts, tryUpdateContactWithCustomHomePhone, tryUpdateContactWithoutHomePhone, updateContact } from "./salesforce";
-import { anonymizeKey, convertFromSalesforceContact, convertToSalesforceContact, formatDuration } from "./util";
+import {
+	createContactResponse,
+	createSalesforceConnection,
+	getContactByCustomHomePhone,
+	getContactByHomePhone,
+	getContactByPhoneOrMobilePhone,
+	oauth2,
+	querySalesforceContacts,
+	tryUpdateContactWithCustomHomePhone,
+	tryUpdateContactWithoutHomePhone,
+	updateContact
+} from "./salesforce";
+import {
+	anonymizeKey,
+	convertFromSalesforceContact,
+	convertToSalesforceContact,
+	formatDuration
+} from "./util";
 import { log } from "./util/logger";
 
 export default class SalesforceAdapter implements Adapter {
@@ -44,13 +69,12 @@ export default class SalesforceAdapter implements Adapter {
 	}
 
 	public async updateContact(config: Config, id: string, contact: ContactUpdate): Promise<Contact> {
-		// return tryUpdateContactWithCustomHomePhone(config, id, contact);
 		try {
 			const salesforceContact = convertToSalesforceContact(contact);
 			const contactResponse = await updateContact(config, id, salesforceContact, contact);
+			throw new Error("error with HomePhone");
 			return contactResponse;
 		} catch (error) {
-			log(config, "Could not update contact", error);
 			if (error.name === "ENTITY_IS_DELETED" || error.name === "INVALID_CROSS_REFERENCE_KEY") {
 				throw new ServerError(404, "Contact not found.");
 			}
@@ -58,17 +82,13 @@ export default class SalesforceAdapter implements Adapter {
 			// We then try to save the number in HomePhone__c as a custom field
 			// If that fails we try to save it without HomePhone or HomePhone__c
 			if (/HomePhone/g.test(error.message)) {
-				const updateTry01 = tryUpdateContactWithCustomHomePhone(config, id, contact);
-				if(!updateTry01) {
-					const updateTry02 = tryUpdateContactWithoutHomePhone(config, id, contact);
-					if(!updateTry02) {
-						throw new ServerError(400, "Contact could not be updated");
-					}
-					return updateTry02;
+				const updateTry = await tryUpdateContactWithoutHomePhone(config, id, contact);
+				if (updateTry) {
+					return updateTry;
 				}
-				return updateTry01;
 			}
 			// if nothing works. fail at last
+			log(config, "Could not update contact", error);
 			throw new ServerError(400, "Contact could not be updated");
 		}
 	}
@@ -113,13 +133,13 @@ export default class SalesforceAdapter implements Adapter {
 			const phoneNumber = direction === CallDirection.IN ? from : to;
 			const phoneContact = await getContactByPhoneOrMobilePhone(config, connection, phoneNumber);
 			const homePhoneContact = await getContactByHomePhone(config, connection, phoneNumber);
-			const customHomePhoneContact = await getContactByCustomHomePhone(
-				config,
-				connection,
-				phoneNumber
-			);
+			// const customHomePhoneContact = await getContactByCustomHomePhone(
+			// 	config,
+			// 	connection,
+			// 	phoneNumber
+			// );
 
-			const contact = phoneContact || homePhoneContact || customHomePhoneContact;
+			const contact = phoneContact || homePhoneContact;
 
 			if (!contact) {
 				log(config, `Unable to find a contact`, { phoneNumber });

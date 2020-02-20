@@ -143,8 +143,10 @@ export async function tryUpdateContactWithCustomHomePhone(
 ): Promise<Contact> {
 	try {
 		// await createHomePhoneCustomField(config);
+		log(config, "Updating contact without custom HomePhone");
 		const salesforceContact = convertToSalesforceContactWithCustomHomePhone(contact);
 		const contactResponse = await updateContact(config, id, salesforceContact, contact);
+		console.log(contactResponse);
 		return contactResponse;
 	} catch (error) {
 		log(config, "Could not update contact with custom HomePhone", error);
@@ -159,6 +161,7 @@ export async function tryUpdateContactWithoutHomePhone(
 ): Promise<Contact> {
 	try {
 		const salesforceContact = convertToSalesforceContactWithoutHomePhone(contact);
+		log(config, "Updating contact without HomePhone");
 		const contactResponse = await updateContact(config, id, salesforceContact, contact);
 		return contactResponse;
 	} catch (error) {
