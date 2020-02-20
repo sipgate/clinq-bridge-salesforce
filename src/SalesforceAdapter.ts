@@ -109,7 +109,6 @@ export default class SalesforceAdapter implements Adapter {
 		try {
 			const connection = createSalesforceConnection(config);
 			const phoneNumber = direction === CallDirection.IN ? from : to;
-			const anonymizedKey = anonymizeKey(config.apiKey);
 			const phoneContact = await getContactByPhoneOrMobilePhone(config, connection, phoneNumber);
 			const homePhoneContact = await getContactByHomePhone(config, connection, phoneNumber);
 			const customHomePhoneContact = await getContactByCustomHomePhone(
