@@ -68,6 +68,8 @@ export default class SalesforceAdapter implements Adapter {
 				}
 				return updateTry01;
 			}
+			// if nothing works. fail at last
+			throw new ServerError(400, "Contact could not be updated");
 		}
 	}
 
