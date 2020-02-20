@@ -1,7 +1,11 @@
 import { Config, Contact, ContactTemplate, ContactUpdate, ServerError } from "@clinq/bridge";
 import { Connection, SuccessResult } from "jsforce";
 import { SalesforceContact } from "../models/salesforce-contact";
-import { convertToSalesforceContactWithCustomHomePhone, convertToSalesforceContactWithoutHomePhone, parsePhoneNumber } from "../util";
+import {
+	convertToSalesforceContactWithCustomHomePhone,
+	convertToSalesforceContactWithoutHomePhone,
+	parsePhoneNumber
+} from "../util";
 import { log } from "../util/logger";
 import { createSalesforceConnection } from "./connection";
 
@@ -57,7 +61,12 @@ export async function getContactByHomePhone(
 		const contact = result.find(Boolean);
 		return contact;
 	} catch (error) {
-		log(config, "Unable to find contact by HomePhone", error);
+		if (error.name === "INVALID_FIELD") {
+			log(config, "Contact does not nave HomePhone set as default field");
+		} else {
+			log(config, "Unable to find contact by HomePhone", error);
+		}
+
 		return null;
 	}
 }
