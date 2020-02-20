@@ -1,100 +1,105 @@
-declare module "jsforce" {
-	// import { SalesforceAttributes } from "jsforce";
+// // tslint:disable:max-classes-per-file
+// declare module "jsforce" {
+// 	// import { SalesforceAttributes } from "jsforce";
 
-	interface SalesforceAttributes {
-		type: string | undefined;
-		url: string | undefined;
-	}
+// 	interface SalesforceAttributes {
+// 		type: string | undefined;
+// 		url: string | undefined;
+// 	}
 
-	interface SalesforceContact {
-		Id?: string;
-		Email: string | null;
-		Name?: string;
-		FirstName: string;
-		LastName: string;
-		Phone?: string | null;
-		MobilePhone?: string | null;
-		HomePhone?: string | null;
-		CreatedDate?: string;
-		attributes?: SalesforceAttributes | null;
-	}
+// 	interface SalesforceContact {
+// 		Id?: string;
+// 		Email: string | null;
+// 		Name?: string;
+// 		FirstName: string;
+// 		LastName: string;
+// 		Phone?: string | null;
+// 		MobilePhone?: string | null;
+// 		HomePhone?: string | null;
+// 		CreatedDate?: string;
+// 		attributes?: SalesforceAttributes | null;
+// 	}
 
-	interface SalesforceTask {
-		Id?: string;
-		WhoId?: string;
-		CallType?: "Inbound" | "Outbound";
-		CallDurationInSeconds?: number;
-		CallDisposition?: string;
-		ActivityDate?: string;
-		TaskSubType?: string;
-		Status?: string;
-		Subject?: string;
-		CallObject?: string;
-	}
+// 	interface SalesforceTask {
+// 		Id?: string;
+// 		WhoId?: string;
+// 		CallType?: "Inbound" | "Outbound";
+// 		CallDurationInSeconds?: number;
+// 		CallDisposition?: string;
+// 		ActivityDate?: string;
+// 		TaskSubType?: string;
+// 		Status?: string;
+// 		Subject?: string;
+// 		CallObject?: string;
+// 	}
 
-	class OAuth2 {
-		getAuthorizationUrl: (any) => string;
-		constructor(params: OAuth2Options);
-	}
+// 	class OAuth2 {
+// 		// tslint:disable-next-line:no-any
+// 		getAuthorizationUrl: (params: any) => string;
+// 		constructor(params: OAuth2Options);
+// 	}
 
-	interface OAuth2Options {
-		clientId: string;
-		clientSecret: string;
-		redirectUri: string;
-	}
+// 	interface OAuth2Options {
+// 		clientId: string;
+// 		clientSecret: string;
+// 		redirectUri: string;
+// 	}
 
-	interface ConnectionOptions {
-		oauth2?: OAuth2;
-		instanceUrl?: string;
-		accessToken?: string;
-		refreshToken?: string;
-	}
+// 	interface ConnectionOptions {
+// 		oauth2?: OAuth2;
+// 		instanceUrl?: string;
+// 		accessToken?: string;
+// 		refreshToken?: string;
+// 	}
 
-	interface QueryResult {
-		records: SalesforceContact[];
-		done: boolean;
-		totalSize: number;
-	}
+// 	interface QueryResult {
+// 		records: SalesforceContact[];
+// 		done: boolean;
+// 		totalSize: number;
+// 	}
 
-	class Connection {
-		accessToken: string;
-		refreshToken: string;
-		instanceUrl: string;
-		authorize: (code: string) => void;
-		sobject: (resource: string) => SObject;
-		query: (query: string) => QueryResult;
-		constructor(params: ConnectionOptions);
-	}
+// 	class Connection {
+// 		accessToken: string;
+// 		refreshToken: string;
+// 		instanceUrl: string;
+// 		authorize: (code: string) => void;
+// 		sobject: (resource: string) => SObject;
+// 		query: (query: string) => QueryResult;
 
-	class SObject {
-		create(object: SalesforceContact | SalesforceTask): Promise<CRUDResponse>;
-		update(object: SalesforceContact): Promise<CRUDResponse>;
-		destroy(id: string): Promise<CRUDResponse>;
-		select(fields: string): this;
-		execute(callback: () => void): this;
-		where(query: string): this;
-		limit(limit: number): this;
-		orderby(field: string, mode: string): this;
-		execute<T>(callback: (error: Error, records: T[]) => T[]): Promise<T[]>;
-		describe(callback: (error: Error, meta: Meta) => void): this;
-		find(query: any): this;
-	}
+// 		constructor(params: ConnectionOptions);
+// 	}
 
-	interface FieldDescription {
-		name: string;
-	}
+// 	class SObject {
+// 		create(object: SalesforceContact | SalesforceTask): Promise<CRUDResponse>;
+// 		update(object: SalesforceContact): Promise<CRUDResponse>;
+// 		destroy(id: string): Promise<CRUDResponse>;
+// 		select(fields: string): this;
+// 		execute(callback: () => void): this;
+// 		where(query: string): this;
+// 		limit(limit: number): this;
+// 		orderby(field: string, mode: string): this;
+// 		// tslint:disable-next-line:adjacent-overload-signatures
+// 		execute<T>(callback: (error: Error, records: T[]) => T[]): Promise<T[]>;
+// 		describe(callback: (error: Error, meta: Meta) => void): this;
+// 		// tslint:disable-next-line:no-any
+// 		find(query: any): this;
+// 	}
 
-	interface Meta {
-		fields: FieldDescription[];
-	}
+// 	interface FieldDescription {
+// 		name: string;
+// 	}
 
-	class CRUDResponse {
-		id: string;
-		success: boolean;
-		error: CRUDError[];
-	}
+// 	interface Meta {
+// 		fields: FieldDescription[];
+// 	}
 
-	class CRUDError {
-		name: string;
-	}
-}
+// 	class CRUDResponse {
+// 		id: string;
+// 		success: boolean;
+// 		error: CRUDError[];
+// 	}
+
+// 	class CRUDError {
+// 		name: string;
+// 	}
+// }

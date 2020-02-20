@@ -42,14 +42,14 @@ export function convertToSalesforceContact(
 export function convertToSalesforceContactWithCustomHomePhone(
 	contact: ContactTemplate | ContactUpdate
 ): SalesforceContact {
-	const customConatct = ({
+	const customContact = ({
 		FirstName: contact.firstName,
 		LastName: contact.lastName,
 		Email: contact.email,
 		MobilePhone: mobileNumberOrNull(contact),
-		HomePhone__c: homeNumberOrNull(contact),
+		"HomePhone__c": homeNumberOrNull(contact),
 		Phone: defaultNumberOrNull(contact)
 	} as unknown) as SalesforceContact;
 
-	return customConatct;
+	return customContact;
 }

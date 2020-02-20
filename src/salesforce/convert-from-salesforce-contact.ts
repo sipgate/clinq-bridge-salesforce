@@ -1,6 +1,6 @@
 import { Contact, PhoneNumber } from "@clinq/bridge";
 import { SalesforceContact } from "jsforce";
-import { PhoneNumberTypes } from ".";
+import { PhoneNumberTypes } from "../util";
 import { PhoneNumberType } from "../models";
 
 export function convertFromSalesforceContact(contact: SalesforceContact): Contact {

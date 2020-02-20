@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@clinq/bridge": "^11.1.1",
 		"@types/express": "^4.17.2",
+		"@types/jsforce": "^1.9.13",
 		"@types/node": "^13.7.1",
 		"env-cmd": "^10.1.0",
 		"jsforce": "^1.9.3",
