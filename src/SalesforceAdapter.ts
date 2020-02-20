@@ -1,11 +1,10 @@
-import { Adapter, Config, Contact, ContactTemplate, ServerError, ContactUpdate, CallEvent, CallDirection } from "@clinq/bridge";
-import { createSalesforceConnection, querySalesforceContacts, createContactResponse, updateStandardContact, tryUpdateContactWithCustomHomePhone, oauth2, getContactByPhoneOrMobilePhone, getContactByHomePhone, getContactByCustomHomePhone } from "./salesforce";
-import { Connection, SuccessResult } from "jsforce";
-import { anonymizeKey, convertFromSalesforceContact, convertToSalesforceContact, formatDuration } from "./util";
+import { Adapter, CallDirection, CallEvent, Config, Contact, ContactTemplate, ContactUpdate, ServerError } from "@clinq/bridge";
 import { Request } from "express";
-import { log } from "./util/logger";
+import { Connection, SuccessResult } from "jsforce";
 import { SalesforceContact } from "./models/salesforce-contact";
-
+import { createContactResponse, createSalesforceConnection, getContactByCustomHomePhone, getContactByHomePhone, getContactByPhoneOrMobilePhone, oauth2, querySalesforceContacts, tryUpdateContactWithCustomHomePhone, tryUpdateContactWithoutHomePhone, updateContact } from "./salesforce";
+import { anonymizeKey, convertFromSalesforceContact, convertToSalesforceContact, formatDuration } from "./util";
+import { log } from "./util/logger";
 
 export default class SalesforceAdapter implements Adapter {
 	public async getContacts(config: Config): Promise<Contact[]> {
@@ -13,27 +12,16 @@ export default class SalesforceAdapter implements Adapter {
 			const connection = createSalesforceConnection(config);
 			const contacts: SalesforceContact[] = await querySalesforceContacts(config, connection, []);
 			const anonymizedKey = anonymizeKey(config.apiKey);
-			log(
-				config,
-				`Found ${contacts.length} Salesforce contacts`,
-				{
-					apiUrl: config.apiUrl
-				}
-			);
+			log(config, `Found ${contacts.length} Salesforce contacts`, {
+				apiUrl: config.apiUrl
+			});
 			const parsedContacts: Contact[] = contacts.map(convertFromSalesforceContact);
 
-			log(
-				config,
-				`Parsed ${parsedContacts.length} contacts`
-			);
+			log(config, `Parsed ${parsedContacts.length} contacts`);
 
 			return parsedContacts;
 		} catch (error) {
-			log(
-				config,
-				`Could not fetch contacts: ${error.message}`,
-				error
-			);
+			log(config, `Could not fetch contacts: ${error.message}`, error);
 			console.log();
 			return [];
 		}
@@ -58,21 +46,27 @@ export default class SalesforceAdapter implements Adapter {
 	public async updateContact(config: Config, id: string, contact: ContactUpdate): Promise<Contact> {
 		// return tryUpdateContactWithCustomHomePhone(config, id, contact);
 		try {
-			const contactResponse = await updateStandardContact(contact, config, id);
+			const salesforceContact = convertToSalesforceContact(contact);
+			const contactResponse = await updateContact(config, id, salesforceContact, contact);
 			return contactResponse;
 		} catch (error) {
-			log(
-				config,
-				"Could not update contact",
-				error
-			);
+			log(config, "Could not update contact", error);
 			if (error.name === "ENTITY_IS_DELETED" || error.name === "INVALID_CROSS_REFERENCE_KEY") {
 				throw new ServerError(404, "Contact not found.");
 			}
 			// Apparently sometimes a salesforce contact doesn't have HomePhone as a default field
 			// We then try to save the number in HomePhone__c as a custom field
+			// If that fails we try to save it without HomePhone or HomePhone__c
 			if (/HomePhone/g.test(error.message)) {
-				tryUpdateContactWithCustomHomePhone(config, id, contact);
+				const updateTry01 = tryUpdateContactWithCustomHomePhone(config, id, contact);
+				if(!updateTry01) {
+					const updateTry02 = tryUpdateContactWithoutHomePhone(config, id, contact);
+					if(!updateTry02) {
+						throw new ServerError(400, "Contact could not be updated");
+					}
+					return updateTry02;
+				}
+				return updateTry01;
 			}
 		}
 	}
@@ -118,16 +112,16 @@ export default class SalesforceAdapter implements Adapter {
 			const anonymizedKey = anonymizeKey(config.apiKey);
 			const phoneContact = await getContactByPhoneOrMobilePhone(config, connection, phoneNumber);
 			const homePhoneContact = await getContactByHomePhone(config, connection, phoneNumber);
-			const customHomePhoneContact = await getContactByCustomHomePhone(config, connection, phoneNumber);
+			const customHomePhoneContact = await getContactByCustomHomePhone(
+				config,
+				connection,
+				phoneNumber
+			);
 
 			const contact = phoneContact || homePhoneContact || customHomePhoneContact;
 
 			if (!contact) {
-				log(
-					config,
-					`Unable to find a contact`,
-					{phoneNumber}
-				);
+				log(config, `Unable to find a contact`, { phoneNumber });
 				return;
 			}
 
@@ -144,17 +138,9 @@ export default class SalesforceAdapter implements Adapter {
 				Subject: `${directionInfo} CLINQ call in "${channel.name}" (${duration})`
 			};
 			await connection.sobject("Task").create(task);
-			log(
-				config,
-				`Successfully added call event`,
-				{phoneNumber}
-			);
+			log(config, `Successfully added call event`, { phoneNumber });
 		} catch (error) {
-			log(
-				config,
-				"Could not save CallEvent",
-				error
-			);
+			log(config, "Could not save CallEvent", error);
 			throw new ServerError(400, "Could not save CallEvent");
 		}
 	}

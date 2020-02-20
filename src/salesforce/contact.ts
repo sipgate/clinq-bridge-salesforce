@@ -1,14 +1,9 @@
 import { Config, Contact, ContactTemplate, ContactUpdate, ServerError } from "@clinq/bridge";
 import { Connection, SuccessResult } from "jsforce";
 import { SalesforceContact } from "../models/salesforce-contact";
-import {
-	convertToSalesforceContact,
-	convertToSalesforceContactWithCustomHomePhone,
-	parsePhoneNumber
-} from "../util";
+import { convertToSalesforceContactWithCustomHomePhone, convertToSalesforceContactWithoutHomePhone, parsePhoneNumber } from "../util";
 import { log } from "../util/logger";
 import { createSalesforceConnection } from "./connection";
-import { handleExecute } from "./execute";
 
 export async function getContactByPhoneOrMobilePhone(
 	config: Config,
@@ -122,26 +117,6 @@ export async function updateContact(
 	return contactResponse;
 }
 
-export async function updateStandardContact(
-	contact: ContactUpdate,
-	config: Config,
-	id: string
-): Promise<Contact> {
-	const salesforceContact = convertToSalesforceContact(contact);
-	const contactResponse = await updateContact(config, id, salesforceContact, contact);
-	return contactResponse;
-}
-
-export async function updateContactWithCustomHomePhone(
-	contact: ContactUpdate,
-	config: Config,
-	id: string
-): Promise<Contact> {
-	const salesforceContact = convertToSalesforceContactWithCustomHomePhone(contact);
-	const contactResponse = await updateContact(config, id, salesforceContact, contact);
-	return contactResponse;
-}
-
 export async function createHomePhoneCustomField(config: Config): Promise<void> {
 	const connection = createSalesforceConnection(config);
 
@@ -168,14 +143,26 @@ export async function tryUpdateContactWithCustomHomePhone(
 ): Promise<Contact> {
 	try {
 		// await createHomePhoneCustomField(config);
-		const contactResponseWithCustomHomePhone = await updateContactWithCustomHomePhone(
-			contact,
-			config,
-			id
-		);
-		return contactResponseWithCustomHomePhone;
+		const salesforceContact = convertToSalesforceContactWithCustomHomePhone(contact);
+		const contactResponse = await updateContact(config, id, salesforceContact, contact);
+		return contactResponse;
 	} catch (error) {
-		log(config, "Could not update contact with custom home phone", error);
-		throw new ServerError(400, "Could not update contact");
+		log(config, "Could not update contact with custom HomePhone", error);
+		return null;
+	}
+}
+
+export async function tryUpdateContactWithoutHomePhone(
+	config: Config,
+	id: string,
+	contact: ContactUpdate
+): Promise<Contact> {
+	try {
+		const salesforceContact = convertToSalesforceContactWithoutHomePhone(contact);
+		const contactResponse = await updateContact(config, id, salesforceContact, contact);
+		return contactResponse;
+	} catch (error) {
+		log(config, "Could not update contact without HomePhone", error);
+		return null;
 	}
 }

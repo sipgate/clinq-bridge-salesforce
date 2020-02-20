@@ -37,8 +37,6 @@ export function convertToSalesforceContact(
 	};
 }
 
-
-
 export function convertToSalesforceContactWithCustomHomePhone(
 	contact: ContactTemplate | ContactUpdate
 ): SalesforceContact {
@@ -48,6 +46,20 @@ export function convertToSalesforceContactWithCustomHomePhone(
 		Email: contact.email,
 		MobilePhone: mobileNumberOrNull(contact),
 		"HomePhone__c": homeNumberOrNull(contact),
+		Phone: defaultNumberOrNull(contact)
+	} as unknown) as SalesforceContact;
+
+	return customContact;
+}
+
+export function convertToSalesforceContactWithoutHomePhone(
+	contact: ContactTemplate | ContactUpdate
+): SalesforceContact {
+	const customContact = ({
+		FirstName: contact.firstName,
+		LastName: contact.lastName,
+		Email: contact.email,
+		MobilePhone: mobileNumberOrNull(contact),
 		Phone: defaultNumberOrNull(contact)
 	} as unknown) as SalesforceContact;
 
