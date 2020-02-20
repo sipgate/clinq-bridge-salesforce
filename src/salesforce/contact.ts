@@ -25,7 +25,7 @@ export async function getContactByPhoneOrMobilePhone(
 					Phone: { $in: numbers }
 				}
 			})
-			.execute({}, handleExecute);
+			.execute();
 
 		log(
 			config,
@@ -35,11 +35,7 @@ export async function getContactByPhoneOrMobilePhone(
 		const contact = result.find(Boolean);
 		return contact;
 	} catch (error) {
-		log(
-			config,
-			"Unable to find contact by Phone or MobilePhone",
-			error
-		);
+		log(config, "Unable to find contact by Phone or MobilePhone", error);
 		return null;
 	}
 }
@@ -61,20 +57,12 @@ export async function getContactByHomePhone(
 			.find<SalesforceContact>({
 				HomePhone: { $in: numbers }
 			})
-			.execute({}, handleExecute);
-			log(
-				config,
-				`Getting contact by home HomePhone ${result.length} results.`,
-				numbers
-			);
+			.execute();
+		log(config, `Getting contact by home HomePhone ${result.length} results.`, numbers);
 		const contact = result.find(Boolean);
 		return contact;
 	} catch (error) {
-		log(
-			config,
-			"Unable to find contact by HomePhone",
-			error
-		);
+		log(config, "Unable to find contact by HomePhone", error);
 		return null;
 	}
 }
@@ -91,7 +79,7 @@ export async function getContactByCustomHomePhone(
 			.find<SalesforceContact>({
 				HomePhone__c: { $in: numbers }
 			})
-			.execute({}, handleExecute);
+			.execute();
 		log(config, `Getting contact by HomePhone__c returned ${result.length} results.`, numbers);
 		const contact = result.find(Boolean);
 		return contact;

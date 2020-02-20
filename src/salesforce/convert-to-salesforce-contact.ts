@@ -1,5 +1,5 @@
 import { ContactTemplate, ContactUpdate, PhoneNumberLabel, PhoneNumber } from "@clinq/bridge";
-import { SalesforceContact } from "jsforce";
+import { SalesforceContact } from "../models/salesforce-contact";
 
 
 function phoneNumberOrNull(phoneNumber: PhoneNumber): string | null {

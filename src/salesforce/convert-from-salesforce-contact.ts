@@ -1,7 +1,7 @@
 import { Contact, PhoneNumber } from "@clinq/bridge";
-import { SalesforceContact } from "jsforce";
 import { PhoneNumberTypes } from "../util";
 import { PhoneNumberType } from "../models";
+import { SalesforceContact } from "../models/salesforce-contact";
 
 export function convertFromSalesforceContact(contact: SalesforceContact): Contact {
 	const relevantTypes: PhoneNumberType[] = PhoneNumberTypes.filter(type => contact[type.property]);
