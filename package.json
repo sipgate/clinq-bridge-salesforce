@@ -12,22 +12,19 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "node dist/index",
-		"watch": "env-cmd -f ./.env/.env.local ts-node-dev src/index.ts"
+		"watch": "env-cmd ts-node-dev src/index.ts"
 	},
 	"dependencies": {
 		"@clinq/bridge": "^11.1.1",
 		"@types/express": "^4.17.2",
 		"@types/jsforce": "^1.9.13",
 		"@types/node": "^13.7.1",
-		"env-cmd": "^10.1.0",
 		"jsforce": "^1.9.3",
 		"moment": "^2.24.0",
 		"typescript": "^3.7.5"
 	},
 	"devDependencies": {
-		"ts-node": "^8.6.2",
-		"ts-node-dev": "^1.0.0-pre.44",
-		"tslint": "^6.0.0",
-		"tslint-config-prettier": "^1.18.0"
+		"env-cmd": "^10.1.0",
+		"ts-node-dev": "^1.1.8"
 	}
 }
