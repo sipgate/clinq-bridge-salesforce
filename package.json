@@ -10,7 +10,7 @@
 	},
 	"license": "Apache-2.0",
 	"scripts": {
-		"postinstall": "tsc",
+		"build": "tsc",
 		"start": "node dist/index",
 		"watch": "env-cmd -f ./.env/.env.local ts-node-dev src/index.ts"
 	},
