@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $APP
+  labels:
+    app: $APP
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: $APP
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: $APP
+    spec:
+      containers:
+        - name: $APP
+          image: $IMAGE
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 400Mi
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            initialDelaySeconds: 30
+            httpGet:
+              path: /health
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: 30
+            httpGet:
+              path: /health
+              port: 8080
+          env:
+            - name: CACHE_REFRESH_INTERVAL
+              value: "3600"
+            - name: REDIS_URL
+              value: rediss://10.102.0.11:6378
+            - name: SF_OAUTH_PROVIDER_CLIENT_ID
+              value: 3MVG9TSaZ8P6zP1roce2837A2tPdW0m11CDTD2ftXt4UOVzip
+            - name: OAUTH_IDENTIFIER
+              value: SALESFORCE
+            - name: SF_OAUTH_PROVIDER_REDIRECT_URI
+              value: https://$DOMAIN/oauth2/callback
+            - name: SF_OAUTH_PROVIDER_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: $APP
+                  key: sf-oauth-provider-client-secret

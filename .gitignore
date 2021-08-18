@@ -15,3 +15,7 @@ dist/
 .env/.env.local
 
 env.sh
+
+# Kubernetes
+k8s/prod.yml
+k8s/secrets.yml
