@@ -48,7 +48,7 @@ spec:
             - name: REDIS_URL
               value: rediss://10.102.0.11:6378
             - name: SF_OAUTH_PROVIDER_CLIENT_ID
-              value: 3MVG9TSaZ8P6zP1roce2837A2tPdW0m11CDTD2ftXt4UOVzip
+              value: 3MVG9TSaZ8P6zP1roce2837A2tPdW0m11CDTD2ftXt4UOVzip.GoHEMhsA8V6ILC3Fmv0U6KCYSPecLfH.gQX
             - name: OAUTH_IDENTIFIER
               value: SALESFORCE
             - name: SF_OAUTH_PROVIDER_REDIRECT_URI
